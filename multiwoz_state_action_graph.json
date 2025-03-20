@@ -1,0 +1,673 @@
+{
+  "nodes": [
+    {
+      "id": "start",
+      "type": "state",
+      "color": "green"
+    },
+    {
+      "id": "hotel_selected",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "hotel_collecting_constraints",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "hotel_constraints_collected",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "hotel_db_search",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "hotel_no_results",
+      "type": "state",
+      "color": "orange"
+    },
+    {
+      "id": "hotel_has_results",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "hotel_booking",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "hotel_booked",
+      "type": "state",
+      "color": "lightgreen"
+    },
+    {
+      "id": "restaurant_selected",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "restaurant_collecting_constraints",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "restaurant_constraints_collected",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "restaurant_db_search",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "restaurant_no_results",
+      "type": "state",
+      "color": "orange"
+    },
+    {
+      "id": "restaurant_has_results",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "restaurant_booking",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "restaurant_booked",
+      "type": "state",
+      "color": "lightgreen"
+    },
+    {
+      "id": "train_selected",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "train_collecting_constraints",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "train_constraints_collected",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "train_db_search",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "train_no_results",
+      "type": "state",
+      "color": "orange"
+    },
+    {
+      "id": "train_has_results",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "train_booking",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "train_booked",
+      "type": "state",
+      "color": "lightgreen"
+    },
+    {
+      "id": "hotel_to_restaurant_transition",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "hotel_to_train_transition",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "restaurant_to_hotel_transition",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "restaurant_to_train_transition",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "train_to_hotel_transition",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "train_to_restaurant_transition",
+      "type": "state",
+      "color": "lightblue"
+    },
+    {
+      "id": "end",
+      "type": "state",
+      "color": "red"
+    },
+    {
+      "id": "greeting",
+      "type": "action",
+      "color": "lightgray"
+    },
+    {
+      "id": "goodbye",
+      "type": "action",
+      "color": "lightgray"
+    },
+    {
+      "id": "hotel-request-price",
+      "type": "action",
+      "color": "yellow"
+    },
+    {
+      "id": "hotel-request-type",
+      "type": "action",
+      "color": "yellow"
+    },
+    {
+      "id": "hotel-request-area",
+      "type": "action",
+      "color": "yellow"
+    },
+    {
+      "id": "hotel-request-stars",
+      "type": "action",
+      "color": "yellow"
+    },
+    {
+      "id": "hotel-request-parking",
+      "type": "action",
+      "color": "yellow"
+    },
+    {
+      "id": "hotel-inform-name",
+      "type": "action",
+      "color": "lightpink"
+    },
+    {
+      "id": "hotel-inform-price",
+      "type": "action",
+      "color": "lightpink"
+    },
+    {
+      "id": "hotel-recommend",
+      "type": "action",
+      "color": "lightpink"
+    },
+    {
+      "id": "hotel-book",
+      "type": "action",
+      "color": "purple"
+    },
+    {
+      "id": "hotel-confirm",
+      "type": "action",
+      "color": "lightgray"
+    },
+    {
+      "id": "restaurant-request-price",
+      "type": "action",
+      "color": "yellow"
+    },
+    {
+      "id": "restaurant-request-food",
+      "type": "action",
+      "color": "yellow"
+    },
+    {
+      "id": "restaurant-request-area",
+      "type": "action",
+      "color": "yellow"
+    },
+    {
+      "id": "restaurant-request-name",
+      "type": "action",
+      "color": "yellow"
+    },
+    {
+      "id": "restaurant-request-time",
+      "type": "action",
+      "color": "yellow"
+    },
+    {
+      "id": "restaurant-inform-name",
+      "type": "action",
+      "color": "lightpink"
+    },
+    {
+      "id": "restaurant-inform-price",
+      "type": "action",
+      "color": "lightpink"
+    },
+    {
+      "id": "restaurant-recommend",
+      "type": "action",
+      "color": "lightpink"
+    },
+    {
+      "id": "restaurant-book",
+      "type": "action",
+      "color": "purple"
+    },
+    {
+      "id": "restaurant-confirm",
+      "type": "action",
+      "color": "lightgray"
+    },
+    {
+      "id": "train-request-departure",
+      "type": "action",
+      "color": "yellow"
+    },
+    {
+      "id": "train-request-destination",
+      "type": "action",
+      "color": "yellow"
+    },
+    {
+      "id": "train-request-day",
+      "type": "action",
+      "color": "yellow"
+    },
+    {
+      "id": "train-request-time",
+      "type": "action",
+      "color": "yellow"
+    },
+    {
+      "id": "train-inform-name",
+      "type": "action",
+      "color": "lightpink"
+    },
+    {
+      "id": "train-inform-price",
+      "type": "action",
+      "color": "lightpink"
+    },
+    {
+      "id": "train-recommend",
+      "type": "action",
+      "color": "lightpink"
+    },
+    {
+      "id": "train-book",
+      "type": "action",
+      "color": "purple"
+    },
+    {
+      "id": "train-confirm",
+      "type": "action",
+      "color": "lightgray"
+    }
+  ],
+  "links": [
+    {
+      "source": "start",
+      "target": "greeting"
+    },
+    {
+      "source": "start",
+      "target": "hotel_selected"
+    },
+    {
+      "source": "start",
+      "target": "restaurant_selected"
+    },
+    {
+      "source": "start",
+      "target": "train_selected"
+    },
+    {
+      "source": "hotel_selected",
+      "target": "hotel_collecting_constraints"
+    },
+    {
+      "source": "hotel_collecting_constraints",
+      "target": "hotel-request-price"
+    },
+    {
+      "source": "hotel_collecting_constraints",
+      "target": "hotel-request-type"
+    },
+    {
+      "source": "hotel_collecting_constraints",
+      "target": "hotel-request-area"
+    },
+    {
+      "source": "hotel_collecting_constraints",
+      "target": "hotel-request-stars"
+    },
+    {
+      "source": "hotel_collecting_constraints",
+      "target": "hotel-request-parking"
+    },
+    {
+      "source": "hotel_collecting_constraints",
+      "target": "hotel_constraints_collected"
+    },
+    {
+      "source": "hotel_constraints_collected",
+      "target": "hotel_db_search"
+    },
+    {
+      "source": "hotel_db_search",
+      "target": "hotel_no_results"
+    },
+    {
+      "source": "hotel_db_search",
+      "target": "hotel_has_results"
+    },
+    {
+      "source": "hotel_no_results",
+      "target": "hotel_collecting_constraints"
+    },
+    {
+      "source": "hotel_has_results",
+      "target": "hotel-inform-name"
+    },
+    {
+      "source": "hotel_has_results",
+      "target": "hotel-recommend"
+    },
+    {
+      "source": "hotel_booking",
+      "target": "hotel-book"
+    },
+    {
+      "source": "hotel_booked",
+      "target": "hotel-confirm"
+    },
+    {
+      "source": "hotel_booked",
+      "target": "end"
+    },
+    {
+      "source": "hotel_booked",
+      "target": "hotel_to_restaurant_transition"
+    },
+    {
+      "source": "hotel_booked",
+      "target": "hotel_to_train_transition"
+    },
+    {
+      "source": "restaurant_selected",
+      "target": "restaurant_collecting_constraints"
+    },
+    {
+      "source": "restaurant_collecting_constraints",
+      "target": "restaurant-request-price"
+    },
+    {
+      "source": "restaurant_collecting_constraints",
+      "target": "restaurant-request-food"
+    },
+    {
+      "source": "restaurant_collecting_constraints",
+      "target": "restaurant-request-area"
+    },
+    {
+      "source": "restaurant_collecting_constraints",
+      "target": "restaurant-request-name"
+    },
+    {
+      "source": "restaurant_collecting_constraints",
+      "target": "restaurant-request-time"
+    },
+    {
+      "source": "restaurant_collecting_constraints",
+      "target": "restaurant_constraints_collected"
+    },
+    {
+      "source": "restaurant_constraints_collected",
+      "target": "restaurant_db_search"
+    },
+    {
+      "source": "restaurant_db_search",
+      "target": "restaurant_no_results"
+    },
+    {
+      "source": "restaurant_db_search",
+      "target": "restaurant_has_results"
+    },
+    {
+      "source": "restaurant_no_results",
+      "target": "restaurant_collecting_constraints"
+    },
+    {
+      "source": "restaurant_has_results",
+      "target": "restaurant-inform-name"
+    },
+    {
+      "source": "restaurant_has_results",
+      "target": "restaurant-recommend"
+    },
+    {
+      "source": "restaurant_booking",
+      "target": "restaurant-book"
+    },
+    {
+      "source": "restaurant_booked",
+      "target": "restaurant-confirm"
+    },
+    {
+      "source": "restaurant_booked",
+      "target": "end"
+    },
+    {
+      "source": "restaurant_booked",
+      "target": "restaurant_to_hotel_transition"
+    },
+    {
+      "source": "restaurant_booked",
+      "target": "restaurant_to_train_transition"
+    },
+    {
+      "source": "train_selected",
+      "target": "train_collecting_constraints"
+    },
+    {
+      "source": "train_collecting_constraints",
+      "target": "train-request-departure"
+    },
+    {
+      "source": "train_collecting_constraints",
+      "target": "train-request-destination"
+    },
+    {
+      "source": "train_collecting_constraints",
+      "target": "train-request-day"
+    },
+    {
+      "source": "train_collecting_constraints",
+      "target": "train-request-time"
+    },
+    {
+      "source": "train_collecting_constraints",
+      "target": "train_constraints_collected"
+    },
+    {
+      "source": "train_constraints_collected",
+      "target": "train_db_search"
+    },
+    {
+      "source": "train_db_search",
+      "target": "train_no_results"
+    },
+    {
+      "source": "train_db_search",
+      "target": "train_has_results"
+    },
+    {
+      "source": "train_no_results",
+      "target": "train_collecting_constraints"
+    },
+    {
+      "source": "train_has_results",
+      "target": "train-inform-name"
+    },
+    {
+      "source": "train_has_results",
+      "target": "train-recommend"
+    },
+    {
+      "source": "train_booking",
+      "target": "train-book"
+    },
+    {
+      "source": "train_booked",
+      "target": "train-confirm"
+    },
+    {
+      "source": "train_booked",
+      "target": "end"
+    },
+    {
+      "source": "train_booked",
+      "target": "train_to_hotel_transition"
+    },
+    {
+      "source": "train_booked",
+      "target": "train_to_restaurant_transition"
+    },
+    {
+      "source": "hotel_to_restaurant_transition",
+      "target": "restaurant_selected"
+    },
+    {
+      "source": "hotel_to_train_transition",
+      "target": "train_selected"
+    },
+    {
+      "source": "restaurant_to_hotel_transition",
+      "target": "hotel_selected"
+    },
+    {
+      "source": "restaurant_to_train_transition",
+      "target": "train_selected"
+    },
+    {
+      "source": "train_to_hotel_transition",
+      "target": "hotel_selected"
+    },
+    {
+      "source": "train_to_restaurant_transition",
+      "target": "restaurant_selected"
+    },
+    {
+      "source": "end",
+      "target": "goodbye"
+    },
+    {
+      "source": "greeting",
+      "target": "start"
+    },
+    {
+      "source": "hotel-request-price",
+      "target": "hotel_collecting_constraints"
+    },
+    {
+      "source": "hotel-request-type",
+      "target": "hotel_collecting_constraints"
+    },
+    {
+      "source": "hotel-request-area",
+      "target": "hotel_collecting_constraints"
+    },
+    {
+      "source": "hotel-request-stars",
+      "target": "hotel_collecting_constraints"
+    },
+    {
+      "source": "hotel-request-parking",
+      "target": "hotel_collecting_constraints"
+    },
+    {
+      "source": "hotel-inform-name",
+      "target": "hotel_has_results"
+    },
+    {
+      "source": "hotel-recommend",
+      "target": "hotel_booking"
+    },
+    {
+      "source": "hotel-book",
+      "target": "hotel_booked"
+    },
+    {
+      "source": "restaurant-request-price",
+      "target": "restaurant_collecting_constraints"
+    },
+    {
+      "source": "restaurant-request-food",
+      "target": "restaurant_collecting_constraints"
+    },
+    {
+      "source": "restaurant-request-area",
+      "target": "restaurant_collecting_constraints"
+    },
+    {
+      "source": "restaurant-request-name",
+      "target": "restaurant_collecting_constraints"
+    },
+    {
+      "source": "restaurant-request-time",
+      "target": "restaurant_collecting_constraints"
+    },
+    {
+      "source": "restaurant-inform-name",
+      "target": "restaurant_has_results"
+    },
+    {
+      "source": "restaurant-recommend",
+      "target": "restaurant_booking"
+    },
+    {
+      "source": "restaurant-book",
+      "target": "restaurant_booked"
+    },
+    {
+      "source": "train-request-departure",
+      "target": "train_collecting_constraints"
+    },
+    {
+      "source": "train-request-destination",
+      "target": "train_collecting_constraints"
+    },
+    {
+      "source": "train-request-day",
+      "target": "train_collecting_constraints"
+    },
+    {
+      "source": "train-request-time",
+      "target": "train_collecting_constraints"
+    },
+    {
+      "source": "train-inform-name",
+      "target": "train_has_results"
+    },
+    {
+      "source": "train-recommend",
+      "target": "train_booking"
+    },
+    {
+      "source": "train-book",
+      "target": "train_booked"
+    }
+  ]
+}
