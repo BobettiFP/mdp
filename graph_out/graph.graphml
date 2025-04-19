@@ -1,0 +1,174 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key id="d2" for="edge" attr.name="example_system" attr.type="string" />
+  <key id="d1" for="edge" attr.name="example_user" attr.type="string" />
+  <key id="d0" for="edge" attr.name="count" attr.type="long" />
+  <graph edgedefault="directed">
+    <node id="b8c9c8c9b8c9c8c9b8c9c8c9b8c9c8c9b8c9c8c9b8c9c8c9b8c9c8c9b8c9c8c9" />
+    <node id="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" />
+    <node id="b5b5c3b9b7d8c8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5" />
+    <node id="d4f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5" />
+    <node id="e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5" />
+    <node id="5e884898da28047151d0e56f8dc6292773603d0d6aabbddc8a3f0f1b2f1b2f1b" />
+    <node id="2c26b46b68ffc68ff99b453c1d30413413413413413413413413413413413413" />
+    <node id="f7f9f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8" />
+    <node id="c7b9c4b7b5e4b7e5f5e4b7e5f5e4b7e5f5e4b7e5f5e4b7e5f5e4b7e5f5e4b7e5" />
+    <node id="b5e4b7e5f5e4b7e5f5e4b7e5f5e4b7e5f5e4b7e5f5e4b7e5f5e4b7e5f5e4b7e5" />
+    <node id="d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2" />
+    <node id="e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3" />
+    <node id="f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4" />
+    <node id="d3f0b4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3" />
+    <node id="e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3" />
+    <node id="f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3" />
+    <edge source="b8c9c8c9b8c9c8c9b8c9c8c9b8c9c8c9b8c9c8c9b8c9c8c9b8c9c8c9b8c9c8c9" target="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" id="request(area)">
+      <data key="d0">1</data>
+      <data key="d1">I need a 19:15 taxi to take me to Avalon.</data>
+      <data key="d2">I can definitely help! Where are you departing from?</data>
+    </edge>
+    <edge source="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" target="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" id="book(area|time)">
+      <data key="d0">1</data>
+      <data key="d1">I will be departing from Primavera.</data>
+      <data key="d2">You car has been booked. It is a black volvo. Can I assist you any further?</data>
+    </edge>
+    <edge source="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" target="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" id="inform(phone)">
+      <data key="d0">1</data>
+      <data key="d1">Can i get the contact number please</data>
+      <data key="d2">Yes, your contact number is 07698022958. Can I assist you any further?</data>
+    </edge>
+    <edge source="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" target="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" id="goodbye">
+      <data key="d0">1</data>
+      <data key="d1">No, that will be all. Good bye.</data>
+      <data key="d2">You're very welcome! Goodbye.</data>
+    </edge>
+    <edge source="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" target="5e884898da28047151d0e56f8dc6292773603d0d6aabbddc8a3f0f1b2f1b2f1b" id="offer(slot_set)">
+      <data key="d0">1</data>
+      <data key="d1">I would prefer the british food.</data>
+      <data key="d2">I have cotto that serves moderate priced food. Would you like to book a table?</data>
+    </edge>
+    <edge source="b5b5c3b9b7d8c8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5" target="d4f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5" id="request(food)">
+      <data key="d0">1</data>
+      <data key="d1">i need a place to dine in the center thats expensive</data>
+      <data key="d2">I have several options for you; do you prefer African, Asian, or British food?</data>
+    </edge>
+    <edge source="d4f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5" target="e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5" id="inform(food)">
+      <data key="d0">1</data>
+      <data key="d1">Any sort of food would be fine, as long as it is a bit expensive. Could I get the phone number for your recommendation?</data>
+      <data key="d2">There is an Afrian place named Bedouin in the centre. How does that sound?</data>
+    </edge>
+    <edge source="e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5" target="e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5" id="inform(phone)">
+      <data key="d0">1</data>
+      <data key="d1">Sounds good, could I get that phone number? Also, could you recommend me an expensive hotel?</data>
+      <data key="d2">Bedouin's phone is 01223367660. As far as hotels go, I recommend the University Arms Hotel in the center of town.</data>
+    </edge>
+    <edge source="e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5" target="e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5e8f5" id="request(day)">
+      <data key="d0">1</data>
+      <data key="d1">Yes. Can you book it for me?</data>
+      <data key="d2">Sure, when would you like that reservation?</data>
+    </edge>
+    <edge source="5e884898da28047151d0e56f8dc6292773603d0d6aabbddc8a3f0f1b2f1b2f1b" target="2c26b46b68ffc68ff99b453c1d30413413413413413413413413413413413413" id="book(slot_set)">
+      <data key="d0">1</data>
+      <data key="d1">Yes please make a booking for 8 people at 12:30 on friday.</data>
+      <data key="d2">I have made your booking here is the information:Booking was successful. The table will be reserved for 15 minutes. Reference number is : VVSOH0TQ .</data>
+    </edge>
+    <edge source="2c26b46b68ffc68ff99b453c1d30413413413413413413413413413413413413" target="2c26b46b68ffc68ff99b453c1d30413413413413413413413413413413413413" id="inform(slot)">
+      <data key="d0">2</data>
+      <data key="d1">What's a good college to visit near the restaurant?</data>
+      <data key="d2">There are 13 colleges in the centre. Is there a particular one you are interested in?</data>
+    </edge>
+    <edge source="2c26b46b68ffc68ff99b453c1d30413413413413413413413413413413413413" target="2c26b46b68ffc68ff99b453c1d30413413413413413413413413413413413413" id="goodbye">
+      <data key="d0">1</data>
+      <data key="d1">That is all I needed.</data>
+      <data key="d2">Thank you for choosing us and enjoy your stay.</data>
+    </edge>
+    <edge source="f7f9f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8" target="f7f9f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8" id="request(area)">
+      <data key="d0">1</data>
+      <data key="d1">Hi, I'd like to book a train to stansted airport from cambridge. Can you help?</data>
+      <data key="d2">Absolutely. Where will you departing from?</data>
+    </edge>
+    <edge source="f7f9f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8" target="f7f9f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8" id="request(day)">
+      <data key="d0">1</data>
+      <data key="d1">From Cambridge, which is why I asked the Cambridge TownInfo centre.</data>
+      <data key="d2">What day would you like to leave?</data>
+    </edge>
+    <edge source="f7f9f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8" target="f7f9f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8" id="offer(slot_set)">
+      <data key="d0">2</data>
+      <data key="d1">On Saturday. Is there a train that will arrive by 15:15?</data>
+      <data key="d2">There is! TR7213 leaves at 05:40 and arrive at 06:08 it is 10.10 pounds. Can I book that for you?</data>
+    </edge>
+    <edge source="f7f9f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8" target="f7f9f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8" id="request(people)">
+      <data key="d0">1</data>
+      <data key="d1">The Lucky Star sounds good. That's all I need.</data>
+      <data key="d2">Would you like to book a table?</data>
+    </edge>
+    <edge source="f7f9f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8" target="f7f9f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8" id="inform(slot)">
+      <data key="d0">1</data>
+      <data key="d1">Can you also tell me the postcode?</data>
+      <data key="d2">Sure. The post code is cb17dy.</data>
+    </edge>
+    <edge source="f7f9f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8" target="f7f9f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8" id="goodbye">
+      <data key="d0">1</data>
+      <data key="d1">Thanks for your help. Good bye.</data>
+      <data key="d2">You're welcome. Please let me know if you need anything else.</data>
+    </edge>
+    <edge source="c7b9c4b7b5e4b7e5f5e4b7e5f5e4b7e5f5e4b7e5f5e4b7e5f5e4b7e5f5e4b7e5" target="b5e4b7e5f5e4b7e5f5e4b7e5f5e4b7e5f5e4b7e5f5e4b7e5f5e4b7e5f5e4b7e5" id="request(area)">
+      <data key="d0">1</data>
+      <data key="d1">Find me a train that leaves on Sunday after 14:00 please</data>
+      <data key="d2">Certainly. Where are you headed?</data>
+    </edge>
+    <edge source="d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2" target="e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3" id="inform(slot)">
+      <data key="d0">1</data>
+      <data key="d1">I want to leave on Wednesday from Cambridge.</data>
+      <data key="d2">The TR1144 leaves Cambridge for Norwich on Wednesday at 05:36. Would that be good for you?</data>
+    </edge>
+    <edge source="d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2" target="e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3" id="book(day|people)">
+      <data key="d0">1</data>
+      <data key="d1">There will be 8 guests.</data>
+      <data key="d2">Booking was successful. Your reference number is 4UFN3SWC . Will that be all for today?</data>
+    </edge>
+    <edge source="e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3" target="f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4" id="inform(slot)">
+      <data key="d0">1</data>
+      <data key="d1">What is the price and travel time?</data>
+      <data key="d2">The price is 17.60 pounds.</data>
+    </edge>
+    <edge source="e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3" target="f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4" id="inform(area)">
+      <data key="d0">1</data>
+      <data key="d1">It's a place called Don Pasquale Pizzeria.</data>
+      <data key="d2">A very nice place in the centre. Need a reservation?</data>
+    </edge>
+    <edge source="e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3" target="e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3" id="goodbye">
+      <data key="d0">1</data>
+      <data key="d1">that is it thank you.</data>
+      <data key="d2">You have a nice day then!</data>
+    </edge>
+    <edge source="e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3" target="e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3" id="request(area)">
+      <data key="d0">1</data>
+      <data key="d1">Can you actually look up a restaurant for me as well?</data>
+      <data key="d2">sure thing what's the area and or name?</data>
+    </edge>
+    <edge source="d3f0b4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3" target="d3f0b4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3" id="request(area)">
+      <data key="d0">1</data>
+      <data key="d1">I'm looking for a places to go and see during my upcoming trip to Cambridge.</data>
+      <data key="d2">What area of town would you like?</data>
+    </edge>
+    <edge source="d3f0b4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3" target="e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3" id="inform(area)">
+      <data key="d0">1</data>
+      <data key="d1">I would like to go to the south area please.</data>
+      <data key="d2">On the south side, your options are the cinema, entertainment venues, museums, nightclubs, parks, and a theatre.</data>
+    </edge>
+    <edge source="e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3" target="e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3" id="inform(area)">
+      <data key="d0">1</data>
+      <data key="d1">That's a lot of choices, how about nightclubs? Can you get me a couple of phone numbers for good ones? I'm hoping to catch DJ Squalour from Ibiza!</data>
+      <data key="d2">The only nightclub in the south is called the place on 22 sidney street. Phone number is 01223324600. Can I help you with anything else?</data>
+    </edge>
+    <edge source="e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3" target="f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3" id="offer(slot_set)">
+      <data key="d0">1</data>
+      <data key="d1">Yes, I would like an expensive hotel with free parking.</data>
+      <data key="d2">I have places that fit that description all over town, except in the north. If area is no concern, I recommend the Gonville in the center of town.</data>
+    </edge>
+    <edge source="f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3" target="f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3f3e3e4f3" id="inform(slot)">
+      <data key="d0">1</data>
+      <data key="d1">Is it four star?</data>
+      <data key="d2">No, it only 3 stars. The Huntington Marriott is 4 stars though. It is also expensive and has free parking and internet.</data>
+    </edge>
+  </graph>
+</graphml>
