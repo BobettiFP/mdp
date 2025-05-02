@@ -1,18 +1,12 @@
-import json, gzip, hashlib, sys
-from pathlib import Path
+import json, gzip, sys, re, hashlib
 from collections import defaultdict
 from jsonschema import validate, Draft202012Validator, ValidationError
 
-# --------------- 1.1  결과 스트리밍 저장 -----------------
+# ---------------- 1.1  스트리밍 저장 -----------------
 def stream_save(turn_json: dict, fout):
-    """
-    주석된 single-turn JSON을 한 줄로 gzip 파일에 기록
-    (= line‑delimited JSON L‑JSON) 
-    """
-    line = json.dumps(turn_json, ensure_ascii=False)
-    fout.write((line + "\n").encode("utf-8"))
+    fout.write((json.dumps(turn_json, ensure_ascii=False) + "\n").encode("utf-8"))
 
-# --------------- 1.2  JSONSchema 로 구조 검증 -----------------
+# ---------------- 1.2  JSON‑Schema ------------------
 TURN_SCHEMA = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object",
@@ -39,60 +33,72 @@ TURN_SCHEMA = {
         "state_repr_next": {"type": "string"},
         "state_id_next":   {"type": "string", "pattern": "^[a-f0-9]{64}$"},
         "transition": {
-            "type": "object",
-            "required": ["prev_state_id", "action", "next_state_id"]
+            "oneOf": [
+                {   # 객체 1개
+                    "type": "object",
+                    "required": ["prev_state_id", "action", "next_state_id"]
+                },
+                {   # 객체 배열
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "object",
+                        "required": ["prev_state_id", "action", "next_state_id"]
+                    }
+                }
+            ]
         }
     }
 }
 validator = Draft202012Validator(TURN_SCHEMA)
 
-# --------------- 1.3  SHA‑256 충돌(역매핑) 체크 --------------
-hash_map = defaultdict(set)   # state_id -> {state_repr}
-
-def check_hash_collision(turn_json: dict, dialogue_id: str):
-    for key in ("state_id_prev", "state_id_next"):
-        sid = turn_json[key]
-        srepr = (
-            turn_json["state_repr_prev"]
-            if key == "state_id_prev" else
-            turn_json["state_repr_next"]
-        )
+# ---------------- 1.3  해시 충돌 검사 -------------
+hash_map = defaultdict(set)
+def check_hash_collision(turn_json, dlg_tag):
+    for sid_key, srepr_key in [("state_id_prev", "state_repr_prev"),
+                               ("state_id_next", "state_repr_next")]:
+        sid = turn_json[sid_key]
+        srepr = turn_json[srepr_key]
         hash_map[sid].add(srepr)
         if len(hash_map[sid]) > 1:
-            print(f"[WARNING] Hash collision in {dialogue_id} for {sid}: "
-                  f"{hash_map[sid]}", file=sys.stderr)
+            print(f"[WARNING] Hash collision {sid} : {hash_map[sid]}", file=sys.stderr)
 
-# --------------- 메인: 전체 대화 JSON 처리 -------------------
-def process_dialogue(dialogue_idx: int, dialogue_obj: dict, fout):
-    """
-    주석기 결과가 대화 단위 JSON( turn_1, turn_2 … )인 경우
-    -> 턴별로 분해해서 검증·저장
-    """
-    for tkey, turn in dialogue_obj.items():
+# ---------------- 대화별 처리 ----------------------
+def process_dialogue(idx: int, dlg_obj: dict, fout):
+    # 오류 대화 건너뛰기
+    if "error" in dlg_obj:
+        print(f"[SKIP] dlg#{idx} has error: {dlg_obj['error']}", file=sys.stderr)
+        return
+
+    for tkey, turn in dlg_obj.items():
+        # ** error 턴 건너뜀 **
+        if not isinstance(turn, dict):
+            print(f"[SKIP] dlg#{idx} {tkey} is not dict", file=sys.stderr)
+            continue
+
+        # transition 필수 보정
+        if "transition" not in turn or not turn["transition"]:
+            turn["transition"] = {}
+
         try:
             validate(turn, TURN_SCHEMA)
         except ValidationError as ve:
-            print(f"[SCHEMA ERR] dlg#{dialogue_idx} {tkey}: {ve.message}",
-                  file=sys.stderr)
+            print(f"[SCHEMA ERR] dlg#{idx} {tkey}: {ve.message}", file=sys.stderr)
             continue
-        check_hash_collision(turn, f"dlg#{dialogue_idx} {tkey}")
+
+        check_hash_collision(turn, f"dlg#{idx} {tkey}")
         stream_save(turn, fout)
 
-# ---------------------------- 실행 예시 -------------------------
+# ---------------- 실행 -----------------------------
 if __name__ == "__main__":
-    """
-    usage:
-        python validate_and_store.py results_first30.json
-               --out results_first30.ldjson.gz
-    """
-    import argparse, gzip
+    import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("input_json", help="annotated dialogue JSON file")
-    parser.add_argument("--out", default="annotated_turns.ldjson.gz")
+    parser.add_argument("input_json")
+    parser.add_argument("--out", default="annotated_turns60.ldjson.gz")
     args = parser.parse_args()
 
-    data = json.load(open(args.input_json, encoding="utf-8"))
-    total_turns, total_err = 0, 0
+    with open(args.input_json, encoding="utf-8") as fp:
+        data = json.load(fp)
 
     with gzip.open(args.out, "wb") as fout:
         for dlg_idx, dlg in data.items():

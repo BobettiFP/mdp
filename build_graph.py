@@ -64,7 +64,7 @@ def save_outputs(out_dir: str):
     # ③ CSV edge list
     with open(os.path.join(out_dir, "edge_list.csv"), "w", newline='', encoding="utf-8") as fp:
         writer = csv.writer(fp)
-        writer.writerow(["src", "dst", "action", "count",
+        writer.writerow(["source", "target", "action", "weight",
                          "example_user", "example_system"])
         for u, v, k, data in G.edges(keys=True, data=True):
             writer.writerow([
