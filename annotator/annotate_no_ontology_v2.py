@@ -94,6 +94,7 @@ If any of these occur, output the string "ERROR" instead of JSON:
   • a required key is missing
   • slot names are not lowercase_snake_case
   • goal_progress sequence regresses (e.g. complete → partial)
+  
 """
 
 # (Optional but strongly recommended)
