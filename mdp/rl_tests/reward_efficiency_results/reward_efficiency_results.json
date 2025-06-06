@@ -1,94 +1,30 @@
 {
-  "experiment_name": "LLM annotation → 더 정교한 보상 신호 → 더 효율적 학습",
-  "hypothesis_verified": "False",
-  "data_summary": {
-    "human_annotations_count": "데이터에서 추출",
-    "llm_annotations_count": "데이터에서 추출",
-    "canonical_map_used": true
+  "human_reward_quality": {
+    "information_content": 0.09317829523477508,
+    "entropy": 0.002265771469116211,
+    "density": 1.0,
+    "discriminativity": 4.413488298101668,
+    "progressivity": 0.4043463089396365,
+    "consistency": 0.9967783184172943
   },
-  "reward_quality_metrics": {
-    "human": {
-      "reward_information_content": 0.9463067263372457,
-      "reward_entropy": 2.163144111341959,
-      "reward_mutual_information": 2.2825702705066533,
-      "reward_density": 1.0,
-      "reward_discriminativity": 0.8545043143621518,
-      "reward_progressivity": 0,
-      "reward_consistency": 0.9999590079848266,
-      "reward_smoothness": 0.971792045593969,
-      "reward_stability": 0.9854309668683633,
-      "policy_gradient_signal_strength": 0.2826909907308754,
-      "value_estimation_accuracy": 0.6185472070735911,
-      "exploration_guidance": 0.4414408027548098
-    },
-    "llm": {
-      "reward_information_content": 0.9556566934733433,
-      "reward_entropy": 2.180707114039645,
-      "reward_mutual_information": 2.5394490930488973,
-      "reward_density": 1.0,
-      "reward_discriminativity": 0.9999897429688152,
-      "reward_progressivity": 0,
-      "reward_consistency": 0.9999933704554538,
-      "reward_smoothness": 0.9502751084448822,
-      "reward_stability": 0.9755826692494903,
-      "policy_gradient_signal_strength": 0.36589600743078815,
-      "value_estimation_accuracy": 0.7256999076178438,
-      "exploration_guidance": 0.7513548532930748
-    }
+  "llm_reward_quality": {
+    "information_content": 0.44465772067692794,
+    "entropy": 0.14427705505068547,
+    "density": 1.0,
+    "discriminativity": 0.4312689768145974,
+    "progressivity": 0.5453642395071366,
+    "consistency": 0.7894697875922121
   },
-  "learning_efficiency_metrics": {
-    "human": {
-      "sample_efficiency": 0.9941348973607037,
-      "data_utilization": 0,
-      "learning_speed": 0.013934932914378936,
-      "policy_improvement_rate": 0.23171599782297847,
-      "performance_gain_per_episode": 0.029859931051620863,
-      "convergence_efficiency": 0.6949084879475849,
-      "exploration_efficiency": 0.23980556348430426,
-      "discovery_rate": 0.9826086956521739,
-      "exploitation_balance": 0.9864484712416286,
-      "transfer_learning_speed": 0.045310674736316,
-      "few_shot_adaptation": 0.9941348973607037,
-      "knowledge_retention": 0.983793231034587
-    },
-    "llm": {
-      "sample_efficiency": 0.9943181818181818,
-      "data_utilization": 0,
-      "learning_speed": 0.0011589017195966342,
-      "policy_improvement_rate": 0.08024296063646062,
-      "performance_gain_per_episode": 0.04091595370411696,
-      "convergence_efficiency": 0.6908969466830093,
-      "exploration_efficiency": 0.3886371592805913,
-      "discovery_rate": 0.9776536312849161,
-      "exploitation_balance": 0.9666657169323025,
-      "transfer_learning_speed": 0.19465262617707135,
-      "few_shot_adaptation": 0.9943181818181818,
-      "knowledge_retention": 0.9776446814900721
-    }
+  "human_learning_eff": {
+    "sample_efficiency": 0.9999804691314623,
+    "learning_speed": 0.04686514435612399,
+    "convergence_efficiency": 0.9996760986594496,
+    "exploration_efficiency": NaN
   },
-  "correlation_analysis": {
-    "human_reward_quality_score": 0.6493884519058535,
-    "llm_reward_quality_score": 0.7233653446270083,
-    "human_efficiency_score": 0.42628521831128185,
-    "llm_efficiency_score": 0.4227778857884739,
-    "reward_quality_advantage": 0.07397689272115482,
-    "efficiency_advantage": -0.0035073325228079377,
-    "correlation_coefficient": -1.0,
-    "p_value": 1.0
-  },
-  "key_improvements": {
-    "reward_quality": {
-      "discriminativity": 0.14548542860666336,
-      "progressivity": 0,
-      "consistency": 3.436247062715836e-05,
-      "signal_strength": 0.08320501669991276
-    },
-    "learning_efficiency": {
-      "sample_efficiency": 0.0001832844574780612,
-      "learning_speed": -0.012776031194782302,
-      "convergence_efficiency": -0.004011541264575591,
-      "exploration_efficiency": 0.14883159579628702
-    }
-  },
-  "conclusion": "❌ 가설이 충분히 지지되지 않음"
+  "llm_learning_eff": {
+    "sample_efficiency": 0.9999804630262773,
+    "learning_speed": 0.26303123541487106,
+    "convergence_efficiency": 0.889468985194677,
+    "exploration_efficiency": NaN
+  }
 }

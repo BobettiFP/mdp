@@ -1,6 +1,6 @@
 {
   "experiment_name": "LLM annotation → 더 풍부한 상태 공간 → 더 나은 일반화",
-  "hypothesis_verified": "False",
+  "hypothesis_verified": false,
   "data_summary": {
     "human_annotations_count": 12,
     "llm_annotations_count": 12,
@@ -8,128 +8,88 @@
   },
   "richness_metrics": {
     "human": {
-      "unique_states": 1960,
-      "state_entropy": 7.38574302358325,
-      "effective_dimensionality": "144",
-      "coverage_ratio": 0.5769796879599647,
-      "density_uniformity": 0.05051572704859327,
-      "cluster_separation": 3.9288383091292167,
-      "intrinsic_dimensionality": "144",
-      "manifold_complexity": 0.5157991911617198,
-      "transition_diversity": 1.1487229648702717,
-      "slot_vocabulary_size": 18,
-      "value_vocabulary_size": 456,
-      "slot_value_combinations": 664
+      "unique_states": 0,
+      "state_entropy": 0.0,
+      "effective_dimensionality": 0,
+      "coverage_ratio": 0.0,
+      "density_uniformity": 0.0,
+      "cluster_separation": 0.0,
+      "intrinsic_dimensionality": 0,
+      "manifold_complexity": 0.0,
+      "transition_diversity": 0.0,
+      "slot_vocabulary_size": 0,
+      "value_vocabulary_size": 0,
+      "slot_value_combinations": 0
     },
     "llm": {
-      "unique_states": 2679,
-      "state_entropy": 7.747291705497284,
-      "effective_dimensionality": "396",
-      "coverage_ratio": 0.7652099400171379,
-      "density_uniformity": -0.022383908722330426,
-      "cluster_separation": 4.3664679534056114,
-      "intrinsic_dimensionality": "396",
-      "manifold_complexity": 0.5638541106712419,
-      "transition_diversity": 4.888325110229495,
-      "slot_vocabulary_size": 232,
-      "value_vocabulary_size": 1403,
-      "slot_value_combinations": 1804
+      "unique_states": 0,
+      "state_entropy": 0.0,
+      "effective_dimensionality": 0,
+      "coverage_ratio": 0.0,
+      "density_uniformity": 0.0,
+      "cluster_separation": 0.0,
+      "intrinsic_dimensionality": 0,
+      "manifold_complexity": 0.0,
+      "transition_diversity": 0.0,
+      "slot_vocabulary_size": 0,
+      "value_vocabulary_size": 0,
+      "slot_value_combinations": 0
     }
   },
   "generalization_metrics": {
     "human": {
       "cross_domain_performance": {
-        "general_to_hotel": 0.0,
-        "general_to_train": 0.0,
-        "general_to_restaurant": 0.0,
-        "hotel_to_general": 0.0,
-        "hotel_to_train": 0.1651376146788991,
-        "hotel_to_restaurant": 0.11695906432748537,
-        "train_to_general": 0.0,
-        "train_to_hotel": 0.1651376146788991,
-        "train_to_restaurant": 0.18627450980392157,
-        "restaurant_to_general": 0.0,
-        "restaurant_to_hotel": 0.11695906432748537,
-        "restaurant_to_train": 0.18627450980392157
+        "single_domain": 0.5
       },
       "few_shot_accuracy": {
-        "1": 0.030320871357079775,
-        "5": 0.12628790108919635,
-        "10": 0.21754489255225198,
-        "20": 0.3326464527524286
+        "1": 0.0,
+        "5": 0.0,
+        "10": 0.0,
+        "20": 0.0
       },
-      "sample_efficiency": 0.19546658816602885,
-      "noise_robustness": 1.433132530120482,
-      "unseen_combination_handling": 1.0
+      "sample_efficiency": 0.0,
+      "noise_robustness": 0.0,
+      "unseen_combination_handling": 0.0
     },
     "llm": {
       "cross_domain_performance": {
-        "restaurant_to_general": 0.0,
-        "restaurant_to_taxi": 0.05726872246696035,
-        "restaurant_to_train": 0.16175156389633602,
-        "restaurant_to_hotel": 0.00851063829787234,
-        "restaurant_to_attraction": 0.006230529595015576,
-        "general_to_restaurant": 0.0,
-        "general_to_taxi": 0.0,
-        "general_to_train": 0.0,
-        "general_to_hotel": 0.0,
-        "general_to_attraction": 0.0,
-        "taxi_to_restaurant": 0.05726872246696035,
-        "taxi_to_general": 0.0,
-        "taxi_to_train": 0.03825136612021858,
-        "taxi_to_hotel": 0.0058823529411764705,
-        "taxi_to_attraction": 0.019230769230769232,
-        "train_to_restaurant": 0.16175156389633602,
-        "train_to_general": 0.0,
-        "train_to_taxi": 0.03825136612021858,
-        "train_to_hotel": 0.05034965034965035,
-        "train_to_attraction": 0.007342143906020558,
-        "hotel_to_restaurant": 0.00851063829787234,
-        "hotel_to_general": 0.0,
-        "hotel_to_taxi": 0.0058823529411764705,
-        "hotel_to_train": 0.05034965034965035,
-        "hotel_to_attraction": 0.043010752688172046,
-        "attraction_to_restaurant": 0.006230529595015576,
-        "attraction_to_general": 0.0,
-        "attraction_to_taxi": 0.019230769230769232,
-        "attraction_to_train": 0.007342143906020558,
-        "attraction_to_hotel": 0.043010752688172046
+        "single_domain": 0.5
       },
       "few_shot_accuracy": {
-        "1": 0.04798628963153385,
-        "5": 0.12196515281348186,
-        "10": 0.16566695229934306,
-        "20": 0.20622679234504426
+        "1": 0.0,
+        "5": 0.0,
+        "10": 0.0,
+        "20": 0.0
       },
-      "sample_efficiency": 0.5152813481862325,
-      "noise_robustness": 1.1227272727272728,
-      "unseen_combination_handling": 1.0
+      "sample_efficiency": 0.0,
+      "noise_robustness": 0.0,
+      "unseen_combination_handling": 0.0
     }
   },
   "correlation_analysis": {
-    "human_richness_score": 2.26084045275239,
-    "llm_richness_score": 5.795241237491904,
-    "human_generalization_score": 0.4216567639512282,
-    "llm_generalization_score": 0.41328725452926895,
-    "richness_advantage": 3.534400784739514,
-    "generalization_advantage": -0.008369509421959243,
-    "correlation_coefficient": -1.0,
+    "human_richness_score": 0.075,
+    "llm_richness_score": 0.075,
+    "human_generalization_score": 0.15,
+    "llm_generalization_score": 0.15,
+    "richness_advantage": 0.0,
+    "generalization_advantage": 0.0,
+    "correlation_coefficient": 0.0,
     "p_value": 1.0
   },
   "key_improvements": {
     "vocabulary_size": {
-      "slot_vocab": 214,
-      "value_vocab": 947,
-      "combinations": 1140
+      "slot_vocab": 0,
+      "value_vocab": 0,
+      "combinations": 0
     },
     "state_space": {
-      "unique_states": 719,
-      "coverage_ratio": 0.18823025205717325,
-      "entropy": 0.36154868191403455
+      "unique_states": 0,
+      "coverage_ratio": 0.0,
+      "entropy": 0.0
     },
     "generalization": {
-      "sample_efficiency": 0.31981476002020365,
-      "noise_robustness": -0.31040525739320923
+      "sample_efficiency": 0.0,
+      "noise_robustness": 0.0
     }
   },
   "conclusion": "❌ 가설이 충분히 지지되지 않음"
