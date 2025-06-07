@@ -1,30 +1,20 @@
 {
-  "human_reward_quality": {
-    "information_content": 0.09317829523477508,
-    "entropy": 0.002265771469116211,
-    "density": 1.0,
-    "discriminativity": 4.413488298101668,
-    "progressivity": 0.4043463089396365,
-    "consistency": 0.9967783184172943
+  "human": {
+    "reward_stats": {
+      "mean": 0.08925390625,
+      "std": 0.04760012047375732,
+      "median": 0.1,
+      "max": 1.0
+    },
+    "sample_efficiency": 3104.0
   },
-  "llm_reward_quality": {
-    "information_content": 0.44465772067692794,
-    "entropy": 0.14427705505068547,
-    "density": 1.0,
-    "discriminativity": 0.4312689768145974,
-    "progressivity": 0.5453642395071366,
-    "consistency": 0.7894697875922121
-  },
-  "human_learning_eff": {
-    "sample_efficiency": 0.9999804691314623,
-    "learning_speed": 0.04686514435612399,
-    "convergence_efficiency": 0.9996760986594496,
-    "exploration_efficiency": NaN
-  },
-  "llm_learning_eff": {
-    "sample_efficiency": 0.9999804630262773,
-    "learning_speed": 0.26303123541487106,
-    "convergence_efficiency": 0.889468985194677,
-    "exploration_efficiency": NaN
+  "llm": {
+    "reward_stats": {
+      "mean": 0.4517857142857143,
+      "std": 0.37983819588172735,
+      "median": 0.5,
+      "max": 1.0
+    },
+    "sample_efficiency": 3.0
   }
 }

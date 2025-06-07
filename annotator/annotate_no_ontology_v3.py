@@ -10,7 +10,11 @@ from typing import List, Dict, Any
 from dotenv import load_dotenv
 from tqdm import tqdm
 from openai import OpenAI
+import time
+from helper_token import count_tokens
 
+# ---------------- 타이머 시작 ----------------
+start = time.perf_counter()
 # ---------- 0. 환경 설정 ----------
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
@@ -258,6 +262,31 @@ if __name__ == "__main__":
 
     # 어노테이션 실행
     annotated = annotate_batch(dialogues, max_workers=args.threads)
+    # ---------------- 비용 계산 ------------------
+    PROMPT_PRICE   = 0.00000015   # $ / token  (gpt-4o-mini, 2025-06 기준)
+    COMPLETION_PRICE = 0.00000060
+
+    prompt_total, completion_total = 0, 0
+    for dlg_raw, dlg_orig in zip(annotated, dialogues):
+        # 1) 프롬프트 토큰 = SYSTEM_PROMPT + USER_PROMPT
+        user_prompt = USER_PROMPT_TMPL.format(dialogue_text=join_utterances(dlg_orig))
+        prompt_total += count_tokens(SYSTEM_PROMPT) + count_tokens(user_prompt)
+
+        # 2) 응답 토큰 = GPT가 준 JSON 문자열
+        if "error" not in dlg_raw:
+            completion_total += count_tokens(json.dumps(dlg_raw))
+        else:
+            # 에러 응답도 모델이 토큰을 썼으므로 포함
+            completion_total += count_tokens(json.dumps(dlg_raw))
+
+    cost_input  = prompt_total    * PROMPT_PRICE
+    cost_output = completion_total * COMPLETION_PRICE
+    cost_total  = cost_input + cost_output
+
+    elapsed = time.perf_counter() - start
+
+    
+
 
     # 결과 저장
     with open(args.output, "w", encoding="utf-8") as f:
@@ -275,3 +304,8 @@ if __name__ == "__main__":
         print(f"Success rate: {stats['success_rate']:.2%}")
         print(f"Average turns per dialogue: {stats['average_turns']:.1f}")
         print(f"Services found: {list(stats['services_distribution'].keys())}")
+        print("\n[USAGE]")
+        print(f"Prompt tokens:     {prompt_total:,}")
+        print(f"Completion tokens: {completion_total:,}")
+        print(f"Estimated cost:    ${cost_total:,.4f}")
+        print(f"Elapsed time:      {elapsed:.1f} s")

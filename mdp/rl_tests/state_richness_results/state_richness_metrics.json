@@ -1,0 +1,22 @@
+{
+  "human": {
+    "unique_states": 2068,
+    "state_entropy": 4.281948836462713,
+    "coverage_ratio": 0.2929178470254957,
+    "effective_dim": 144,
+    "density_uniformity": 0.4810230820753395,
+    "cluster_separation": 4.09863047421083,
+    "slot_vocab": 32,
+    "value_vocab": 480
+  },
+  "llm": {
+    "unique_states": 3180,
+    "state_entropy": 7.781762636241728,
+    "coverage_ratio": 0.4531205471644343,
+    "effective_dim": 411,
+    "density_uniformity": 0.0013428602592480785,
+    "cluster_separation": 4.125698246518461,
+    "slot_vocab": 430,
+    "value_vocab": 1415
+  }
+}

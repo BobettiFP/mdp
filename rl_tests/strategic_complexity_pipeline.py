@@ -1,220 +1,154 @@
 """
-Strategic‑Complexity Pipeline (clean rewrite)
--------------------------------------------
-Evaluates *strategic complexity* of dialogue annotations (human vs LLM) **without**
-any hard‑coded biases, mock data, or domain‑prefix stripping.
+Strategic‑Complexity Pipeline (rev 2)
+====================================
+Evaluates *strategic complexity* of Human vs LLM annotations **and** optional
+RL learning efficiency — using only *real* data, no mocks.
 
-Usage
------
-$ python strategic_complexity_pipeline.py \
-        --annotations processed_annotations.json \
-        --rl-hist-human logs/human_env.csv \
-        --rl-hist-llm   logs/llm_env.csv 
+Run one‑liner:
+python rl_tests/strategic_complexity_pipeline.py --annotations processed_annotations.json --rl-hist-human logs/human_env.csv --rl-hist-llm logs/llm_env.csv --outdir mdp/rl_tests/strategic_complexity_results
 
-The script will output a summary JSON (strategic_complexity_results.json)
-and a pair of quick‑look PNG visualisations in ./figures/.
-
-Key fixes vs legacy version
----------------------------
-1. *No* domain‑prefix stripping – slots like "restaurant_name" & "hotel_name" stay distinct.
-2. *Real* RL histories: cumulative reward etc. loaded from CSV logs instead of random mocks.
-3. Zero hard‑coded LLM bonuses. Same formulae for both groups.
-4. Deterministic – random seeds fixed.
-5. Shared utilities extracted for clarity and unit‑testability.
-
-Author: (your name)
-Date  : 2025‑06‑06
+Key points
+----------
+* accepts both kebab‑case and snake‑case CLI flags
+* reads new `{"annotations": [...]}` structure
+* skips empty‑slot turns, keeps domain prefixes intact
+* random seeds fixed for reproducibility
+* writes:
+    ├── strategic_complexity_results.json
+    ├── strategic_metrics.png         (bar chart)
+    └── cumulative_reward.png         (if RL logs provided)
 """
 from __future__ import annotations
 
-import argparse
-import json
-import random
-from collections import Counter, defaultdict
-from dataclasses import dataclass
+import argparse, json, os, random
+from collections import defaultdict, Counter
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-###############################################################################
-# Global config & utils                                                      #
-###############################################################################
-RNG_SEED = 42
-random.seed(RNG_SEED)
-np.random.seed(RNG_SEED)
+# ---------------------------------------------------------------------------
+SEED = 42
+random.seed(SEED)
+np.random.seed(SEED)
 
+# ---------------------------------------------------------------------------
 
-def normalize_slot(slot: str) -> str:
-    """Basic normalisation → lowercase + hyphen→underscore only."""
+def _normalize(slot: str) -> str:
     return slot.lower().replace("-", "_")
 
+# ---------------- annotation utils -----------------------------------------
 
-def load_annotations(path: Path) -> Tuple[List[dict], List[dict]]:
-    """Load processed_annotations.json and split by annotation_type."""
-    data = json.loads(path.read_text())
+def load_annotations(path: Path):
+    data = json.load(path.open())
+    recs = data["annotations"] if isinstance(data, dict) else data
+    human = [r for r in recs if r.get("annotation_type") == "human" and r["state_after"]]
+    llm   = [r for r in recs if r.get("annotation_type") == "llm"   and r["state_after"]]
+    if not human or not llm:
+        raise ValueError("Both human and LLM records with non‑empty state_after required.")
+    return human, llm
 
-    # new structure: list under "all_annotations" OR pre‑split lists
-    recs: List[dict] = []
-    if isinstance(data, dict) and "all_annotations" in data:
-        recs.extend(data["all_annotations"])
-    else:
-        recs.extend(data.get("human_annotations", []))
-        recs.extend(data.get("llm_annotations", []))
+# -------------- strategic metrics ------------------------------------------
 
-    humans = [r for r in recs if r.get("annotation_type") == "human"]
-    llms   = [r for r in recs if r.get("annotation_type") == "llm"]
-
-    if not humans or not llms:
-        raise ValueError("Both human and LLM annotations must be present & tagged.")
-    return humans, llms
-
-###############################################################################
-# Metric calculations                                                        #
-###############################################################################
-@dataclass
-class DialogueMetrics:
-    planning_depth: float
-    goal_directedness: float
-    behavioural_complexity: float
-
-    @classmethod
-    def from_dialogue(cls, turns: List[dict]) -> "DialogueMetrics":
-        """Compute simple illustrative metrics for a single dialogue."""
-        # planning depth ≈ #unique slots touched / #turns
-        slots = set()
-        for t in turns:
-            slots.update(map(normalize_slot, t.get("slots", {}).keys()))
-        depth = len(slots) / max(len(turns), 1)
-
-        # goal_directedness: ratio of user requests satisfied at final turn
-        satisfied = turns[-1].get("goal_progress") == "complete"
-        directed  = 1.0 if satisfied else 0.0
-
-        # behavioural complexity: entropy over action types
-        actions = [a for t in turns for a in t.get("actions", [])]
-        cnt = Counter(actions)
-        probs = np.array(list(cnt.values())) / max(sum(cnt.values()), 1)
-        entropy = float(-(probs * np.log2(probs + 1e-9)).sum())
-
-        return cls(depth, directed, entropy)
+def metrics_per_dialog(records: List[dict]) -> Dict[str, float]:
+    slots = set()
+    actions = []
+    for r in records:
+        slots.update(map(_normalize, r["state_after"].keys()))
+        actions.append(r["action"])
+    turns = len(records)
+    depth = len(slots) / max(turns, 1)
+    goal  = float(records[-1].get("goal_progress") == "complete")
+    cnt = Counter(actions)
+    p   = np.array(list(cnt.values())) / max(sum(cnt.values()), 1)
+    beh = float(-(p * np.log2(p + 1e-9)).sum())
+    return {"planning_depth": depth, "goal_directedness": goal, "behavioural_complexity": beh}
 
 
-@dataclass
-class CorpusMetrics:
-    planning_depth_mean: float
-    goal_directedness_mean: float
-    behavioural_complexity_mean: float
+def corpus_metrics(dialogs: Dict[str, List[dict]]):
+    ms = [metrics_per_dialog(d) for d in dialogs.values()]
+    arr = {k: np.mean([m[k] for m in ms]) for k in ms[0].keys()}
+    score = 0.4*arr["planning_depth"] + 0.3*arr["goal_directedness"] + 0.3*arr["behavioural_complexity"]
+    return arr, score
 
-    @classmethod
-    def from_dialogues(cls, dialogs: List[List[dict]]) -> "CorpusMetrics":
-        metrics = [DialogueMetrics.from_dialogue(d) for d in dialogs]
-        if not metrics:
-            raise ValueError("No dialogues provided to CorpusMetrics.")
-        depth = np.mean([m.planning_depth for m in metrics])
-        goal  = np.mean([m.goal_directedness for m in metrics])
-        beh   = np.mean([m.behavioural_complexity for m in metrics])
-        return cls(depth, goal, beh)
+# -------------- RL efficiency ----------------------------------------------
 
-    def strategic_score(self, w_depth=0.4, w_goal=0.3, w_beh=0.3) -> float:
-        return (
-            w_depth * self.planning_depth_mean +
-            w_goal  * self.goal_directedness_mean +
-            w_beh   * self.behavioural_complexity_mean
-        )
-
-###############################################################################
-# RL history metrics                                                         #
-###############################################################################
-
-def load_rl_history(csv_path: Path) -> pd.DataFrame:
-    """Assume columns: episode, reward, success_rate."""
-    df = pd.read_csv(csv_path)
-    required = {"episode", "reward", "success_rate"}
-    if not required.issubset(df.columns):
-        raise ValueError(f"RL log {csv_path} missing columns: {required-df.columns}")
-    return df.sort_values("episode")
+def load_rl(csv: Path):
+    df = pd.read_csv(csv)
+    need = {"episode", "reward"}
+    if not need.issubset(df.columns):
+        raise ValueError(f"{csv} missing {need-df.columns}")
+    df = df.sort_values("episode")
+    return df
 
 
-def efficiency_metrics(df: pd.DataFrame) -> Dict[str, float]:
-    cum_reward = df["reward"].cumsum()
-    # simple estimates
-    speed      = (cum_reward.iloc[99] - cum_reward.iloc[0]) / 100  # first 100 episodes slope
-    sample_eff = df["success_rate"].mean()
+def learning_efficiency(df: pd.DataFrame):
+    speed = (df.reward.cumsum().iloc[199] - df.reward.cumsum().iloc[0]) / 200 if len(df) > 200 else 0
+    sample_eff = df.reward.gt(0).mean()
     return {"learning_speed": speed, "sample_efficiency": sample_eff}
 
-###############################################################################
-# Visualisation helpers                                                      #
-###############################################################################
+# -------------- plotting ----------------------------------------------------
 
-def quick_plot(df_h: pd.DataFrame, df_l: pd.DataFrame, out: Path):
+def plot_metrics(h: Dict[str,float], l: Dict[str,float], out: Path):
+    keys = list(h.keys())
+    x = np.arange(len(keys))
     plt.figure(figsize=(6,4))
-    plt.plot(df_h["episode"], df_h["reward"].cumsum(), label="Human env")
-    plt.plot(df_l["episode"], df_l["reward"].cumsum(), label="LLM env")
-    plt.xlabel("Episode")
-    plt.ylabel("Cumulative reward")
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(out, dpi=150)
-    plt.close()
+    plt.bar(x-0.15, [h[k] for k in keys], width=0.3, label="Human")
+    plt.bar(x+0.15, [l[k] for k in keys], width=0.3, label="LLM")
+    plt.xticks(x, keys, rotation=15)
+    plt.ylabel("Value")
+    plt.legend(); plt.tight_layout()
+    plt.savefig(out, dpi=150); plt.close()
 
-###############################################################################
-# Main pipeline                                                              #
-###############################################################################
 
-def run(args):
-    humans, llms = load_annotations(Path(args.annotations))
+def plot_cumreward(h_df: pd.DataFrame, l_df: pd.DataFrame, out: Path):
+    plt.figure(figsize=(6,4))
+    plt.plot(h_df.episode, h_df.reward.cumsum(), label="Human env")
+    plt.plot(l_df.episode, l_df.reward.cumsum(), label="LLM env")
+    plt.xlabel("Episode"); plt.ylabel("Cumulative reward"); plt.legend(); plt.tight_layout()
+    plt.savefig(out, dpi=150); plt.close()
 
-    # split into dialogues (list[list[turn]])
-    by_id_h: Dict[str, List[dict]] = defaultdict(list)
-    by_id_l: Dict[str, List[dict]] = defaultdict(list)
-    for rec in humans:
-        by_id_h[rec["dialogue_id"]].append(rec)
-    for rec in llms:
-        by_id_l[rec["dialogue_id"]].append(rec)
+# -------------- main --------------------------------------------------------
 
-    cm_h = CorpusMetrics.from_dialogues(list(by_id_h.values()))
-    cm_l = CorpusMetrics.from_dialogues(list(by_id_l.values()))
+def main():
+    pa = argparse.ArgumentParser()
+    pa.add_argument("--annotations", required=True)
+    pa.add_argument("--rl-hist-human", dest="rl_h")
+    pa.add_argument("--rl_hist_human", dest="rl_h")   # alias
+    pa.add_argument("--rl-hist-llm", dest="rl_l")
+    pa.add_argument("--rl_hist_llm", dest="rl_l")
+    pa.add_argument("--outdir", default="strategic_complexity_results")
+    args = pa.parse_args()
 
-    score_h = cm_h.strategic_score()
-    score_l = cm_l.strategic_score()
+    os.makedirs(args.outdir, exist_ok=True)
 
-    # RL logs (optional; skip if not given)
-    rl_h = rl_l = None
-    eff_h = eff_l = {}
-    if args.rl_hist_human and args.rl_hist_llm:
-        rl_h = load_rl_history(Path(args.rl_hist_human))
-        rl_l = load_rl_history(Path(args.rl_hist_llm))
-        eff_h = efficiency_metrics(rl_h)
-        eff_l = efficiency_metrics(rl_l)
-        quick_plot(rl_h, rl_l, Path("figures/cumulative_reward.png"))
+    human, llm = load_annotations(Path(args.annotations))
+    by_h = defaultdict(list); by_l = defaultdict(list)
+    for r in human: by_h[r["dialogue_id"]].append(r)
+    for r in llm:   by_l[r["dialogue_id"]].append(r)
 
-    # save results
+    met_h, score_h = corpus_metrics(by_h)
+    met_l, score_l = corpus_metrics(by_l)
+
     out = {
-        "human": {
-            "strategic_metrics": cm_h.__dict__,
-            "strategic_score": score_h,
-            "efficiency_metrics": eff_h,
-        },
-        "llm": {
-            "strategic_metrics": cm_l.__dict__,
-            "strategic_score": score_l,
-            "efficiency_metrics": eff_l,
-        },
+        "human": {"strategic_metrics": met_h, "strategic_score": score_h},
+        "llm":   {"strategic_metrics": met_l, "strategic_score": score_l},
     }
-    Path("strategic_complexity_results.json").write_text(json.dumps(out, indent=2))
-    print("✔ strategic_complexity_results.json written. Human score = {:.3f}, LLM score = {:.3f}".format(score_h, score_l))
 
-###############################################################################
-# CLI                                                                        #
-###############################################################################
+    # RL logs optional
+    if args.rl_h and args.rl_l:
+        df_h = load_rl(Path(args.rl_h))
+        df_l = load_rl(Path(args.rl_l))
+        out["human"]["efficiency_metrics"] = learning_efficiency(df_h)
+        out["llm"]["efficiency_metrics"]   = learning_efficiency(df_l)
+        plot_cumreward(df_h, df_l, Path(args.outdir)/"cumulative_reward.png")
+
+    # save JSON + plot
+    Path(args.outdir, "strategic_complexity_results.json").write_text(json.dumps(out, indent=2))
+    plot_metrics(met_h, met_l, Path(args.outdir)/"strategic_metrics.png")
+    print(f"✔ results + plots saved in {args.outdir}  |  Human={score_h:.3f}  LLM={score_l:.3f}")
 
 if __name__ == "__main__":
-    p = argparse.ArgumentParser(description="Strategic‑Complexity evaluation pipeline (clean version)")
-    p.add_argument("--annotations", required=True, help="Path to processed_annotations.json")
-    p.add_argument("--rl-hist-human", help="CSV log of RL training in human‑labelled env")
-    p.add_argument("--rl-hist-llm", help="CSV log of RL training in LLM‑labelled env")
-    args = p.parse_args()
-    run(args)
+    main()

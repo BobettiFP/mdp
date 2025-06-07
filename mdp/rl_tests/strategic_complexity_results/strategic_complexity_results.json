@@ -1,0 +1,26 @@
+{
+  "human": {
+    "strategic_metrics": {
+      "planning_depth": 1.0973621729744178,
+      "goal_directedness": 0.0,
+      "behavioural_complexity": -1.4426951595367385e-09
+    },
+    "strategic_score": 0.4389448687569586,
+    "efficiency_metrics": {
+      "learning_speed": -0.0015000000000000002,
+      "sample_efficiency": 0.94521484375
+    }
+  },
+  "llm": {
+    "strategic_metrics": {
+      "planning_depth": 0.6766511724507037,
+      "goal_directedness": 0.0,
+      "behavioural_complexity": 0.7988910735238681
+    },
+    "strategic_score": 0.510327791037442,
+    "efficiency_metrics": {
+      "learning_speed": 0.11449999999999985,
+      "sample_efficiency": 0.7418724601437949
+    }
+  }
+}
