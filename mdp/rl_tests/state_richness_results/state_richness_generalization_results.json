@@ -1,0 +1,96 @@
+{
+  "experiment_name": "LLM annotation → 더 풍부한 상태 공간 → 더 나은 일반화",
+  "hypothesis_verified": false,
+  "data_summary": {
+    "human_annotations_count": 12,
+    "llm_annotations_count": 12,
+    "canonical_map_used": true
+  },
+  "richness_metrics": {
+    "human": {
+      "unique_states": 0,
+      "state_entropy": 0.0,
+      "effective_dimensionality": 0,
+      "coverage_ratio": 0.0,
+      "density_uniformity": 0.0,
+      "cluster_separation": 0.0,
+      "intrinsic_dimensionality": 0,
+      "manifold_complexity": 0.0,
+      "transition_diversity": 0.0,
+      "slot_vocabulary_size": 0,
+      "value_vocabulary_size": 0,
+      "slot_value_combinations": 0
+    },
+    "llm": {
+      "unique_states": 0,
+      "state_entropy": 0.0,
+      "effective_dimensionality": 0,
+      "coverage_ratio": 0.0,
+      "density_uniformity": 0.0,
+      "cluster_separation": 0.0,
+      "intrinsic_dimensionality": 0,
+      "manifold_complexity": 0.0,
+      "transition_diversity": 0.0,
+      "slot_vocabulary_size": 0,
+      "value_vocabulary_size": 0,
+      "slot_value_combinations": 0
+    }
+  },
+  "generalization_metrics": {
+    "human": {
+      "cross_domain_performance": {
+        "single_domain": 0.5
+      },
+      "few_shot_accuracy": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 0.0,
+        "20": 0.0
+      },
+      "sample_efficiency": 0.0,
+      "noise_robustness": 0.0,
+      "unseen_combination_handling": 0.0
+    },
+    "llm": {
+      "cross_domain_performance": {
+        "single_domain": 0.5
+      },
+      "few_shot_accuracy": {
+        "1": 0.0,
+        "5": 0.0,
+        "10": 0.0,
+        "20": 0.0
+      },
+      "sample_efficiency": 0.0,
+      "noise_robustness": 0.0,
+      "unseen_combination_handling": 0.0
+    }
+  },
+  "correlation_analysis": {
+    "human_richness_score": 0.075,
+    "llm_richness_score": 0.075,
+    "human_generalization_score": 0.15,
+    "llm_generalization_score": 0.15,
+    "richness_advantage": 0.0,
+    "generalization_advantage": 0.0,
+    "correlation_coefficient": 0.0,
+    "p_value": 1.0
+  },
+  "key_improvements": {
+    "vocabulary_size": {
+      "slot_vocab": 0,
+      "value_vocab": 0,
+      "combinations": 0
+    },
+    "state_space": {
+      "unique_states": 0,
+      "coverage_ratio": 0.0,
+      "entropy": 0.0
+    },
+    "generalization": {
+      "sample_efficiency": 0.0,
+      "noise_robustness": 0.0
+    }
+  },
+  "conclusion": "❌ 가설이 충분히 지지되지 않음"
+}

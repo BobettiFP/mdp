@@ -1,0 +1,112 @@
+{
+  "human": {
+    "richness_metrics": {
+      "unique_states": 2068,
+      "state_entropy": 4.281948836462713,
+      "coverage_ratio": 0.2929178470254957,
+      "effective_dim": 144,
+      "density_uniformity": 0.4810230820753395,
+      "cluster_separation": 4.09863047421083,
+      "slot_vocab": 32,
+      "value_vocab": 480
+    },
+    "clustering": {
+      "method": "kmeans",
+      "silhouette_score": 0.4688770317217118,
+      "n_clusters": 3,
+      "cluster_info": {
+        "cluster_0": {
+          "size": 5217,
+          "representative_idx": 1,
+          "representative_state": {},
+          "centroid_distance": 0.3074683425202418,
+          "avg_distance_to_centroid": 0.9170952917014636,
+          "intra_cluster_diversity": 1.3144655735773798
+        },
+        "cluster_1": {
+          "size": 936,
+          "representative_idx": 4218,
+          "representative_state": {
+            "train_day": "wednesday",
+            "train_departure": "norwich",
+            "train_destination": "cambridge"
+          },
+          "centroid_distance": 1.6391831185978862,
+          "avg_distance_to_centroid": 2.6782381990899555,
+          "intra_cluster_diversity": 3.8190612733024882
+        },
+        "cluster_2": {
+          "size": 907,
+          "representative_idx": 6530,
+          "representative_state": {
+            "hotel_area": "centre",
+            "hotel_parking": "yes",
+            "hotel_type": "guesthouse"
+          },
+          "centroid_distance": 2.316906846795021,
+          "avg_distance_to_centroid": 3.2023918929735786,
+          "intra_cluster_diversity": 4.537301573054572
+        }
+      },
+      "representative_indices": [
+        1,
+        4218,
+        6530
+      ]
+    }
+  },
+  "llm": {
+    "richness_metrics": {
+      "unique_states": 3180,
+      "state_entropy": 7.781762636241728,
+      "coverage_ratio": 0.4531205471644343,
+      "effective_dim": 411,
+      "density_uniformity": 0.0013428602592480785,
+      "cluster_separation": 4.125698246518461,
+      "slot_vocab": 430,
+      "value_vocab": 1415
+    },
+    "clustering": {
+      "method": "kmeans",
+      "silhouette_score": 0.05258094221336041,
+      "n_clusters": 3,
+      "cluster_info": {
+        "cluster_0": {
+          "size": 2946,
+          "representative_idx": 3,
+          "representative_state": {},
+          "centroid_distance": 0.994437639192124,
+          "avg_distance_to_centroid": 2.7031225043267866,
+          "intra_cluster_diversity": 3.9169036540352833
+        },
+        "cluster_1": {
+          "size": 2164,
+          "representative_idx": 6,
+          "representative_state": {
+            "restaurant_area": "centre",
+            "restaurant_food_type": "expensive"
+          },
+          "centroid_distance": 1.5994228117541123,
+          "avg_distance_to_centroid": 3.1275228365430823,
+          "intra_cluster_diversity": 4.491756290404113
+        },
+        "cluster_2": {
+          "size": 1908,
+          "representative_idx": 232,
+          "representative_state": {
+            "hotel_area": "north",
+            "hotel_free_parking": "true"
+          },
+          "centroid_distance": 1.945572717349162,
+          "avg_distance_to_centroid": 3.605301159577813,
+          "intra_cluster_diversity": 5.155535183621099
+        }
+      },
+      "representative_indices": [
+        3,
+        6,
+        232
+      ]
+    }
+  }
+}
