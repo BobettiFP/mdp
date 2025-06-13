@@ -34,52 +34,180 @@ def vecs(recs: List[dict], slot2i: Dict[str,int], val2i: Dict[str,int]):
     return np.vstack(arr)
 
 def find_optimal_clusters(X, max_clusters=None):
-    """엘보우 방법과 실루엣 스코어를 통해 최적 클러스터 수 결정"""
+    """엘보우 방법, 실루엣 스코어, 칼린스키-하라바즈 지수를 종합한 최적 클러스터 수 결정"""
     if len(X) < 3:
         return 1
     
-    max_k = max_clusters or min(10, len(X) // 2)
+    # 고유한 상태 수 기반으로 더 현실적인 최대 클러스터 수 설정
+    unique_states = len(np.unique(X, axis=0))
+    max_k = max_clusters or min(max(unique_states // 3, 8), unique_states - 1)
     max_k = max(2, min(max_k, len(X) - 1))
     
     if max_k < 2:
         return 1
     
-    # 실루엣 스코어로 최적 클러스터 수 찾기
-    silhouette_scores = []
     K_range = range(2, max_k + 1)
+    silhouette_scores = []
+    inertias = []
+    calinski_scores = []
     
     for k in K_range:
-        kmeans = KMeans(n_clusters=k, n_init=5, random_state=0)
+        kmeans = KMeans(n_clusters=k, n_init=10, random_state=0)
         labels = kmeans.fit_predict(X)
-        score = silhouette_score(X, labels)
-        silhouette_scores.append(score)
+        
+        # 실루엣 스코어
+        sil_score = silhouette_score(X, labels)
+        silhouette_scores.append(sil_score)
+        
+        # 엘보우 방법을 위한 inertia
+        inertias.append(kmeans.inertia_)
+        
+        # 칼린스키-하라바즈 지수
+        from sklearn.metrics import calinski_harabasz_score
+        ch_score = calinski_harabasz_score(X, labels)
+        calinski_scores.append(ch_score)
     
-    if silhouette_scores:
-        optimal_k = K_range[np.argmax(silhouette_scores)]
+    if not silhouette_scores:
+        return 2
+    
+    # 엘보우 방법으로 급격한 변화점 찾기
+    def find_elbow(inertias):
+        if len(inertias) < 3:
+            return 0
+        
+        # 2차 차분으로 변곡점 찾기
+        diffs = np.diff(inertias)
+        second_diffs = np.diff(diffs)
+        if len(second_diffs) == 0:
+            return 0
+        return np.argmax(second_diffs) + 2  # K_range 시작이 2이므로
+    
+    # 각 방법의 추천값
+    sil_optimal = K_range[np.argmax(silhouette_scores)]
+    elbow_k = find_elbow(inertias)
+    ch_optimal = K_range[np.argmax(calinski_scores)]
+    
+    # 가중 평균으로 최종 결정 (실루엣 스코어에 더 큰 가중치)
+    candidates = []
+    if sil_optimal: candidates.extend([sil_optimal] * 3)  # 실루엣 스코어 3배 가중
+    if elbow_k and 2 <= elbow_k <= max_k: candidates.append(elbow_k)
+    if ch_optimal: candidates.append(ch_optimal)
+    
+    if candidates:
+        # 가장 빈번한 값 선택, 동률이면 중간값
+        from collections import Counter
+        counter = Counter(candidates)
+        most_common = counter.most_common()
+        
+        if len(most_common) > 1 and most_common[0][1] == most_common[1][1]:
+            # 동률이면 더 큰 클러스터 수 선택 (더 세분화)
+            optimal_k = max([k for k, count in most_common if count == most_common[0][1]])
+        else:
+            optimal_k = most_common[0][0]
+        
+        # 최소 3개 클러스터 보장 (단순한 이진 분류 방지)
+        optimal_k = max(3, min(optimal_k, max_k))
         return optimal_k
     
-    return 2
+    return max(3, min(max_k, len(K_range) // 2 + 2))
 
 def classify_states(X, recs, optimal_k):
-    """상태들을 클러스터링하고 각 클러스터의 대표 상태 선택"""
+    """다중 방법으로 상태들을 클러스터링하고 각 클러스터의 대표 상태 선택"""
     if len(X) < 2:
         return {
             'labels': np.zeros(len(X)),
             'representatives': [0] if len(X) > 0 else [],
             'cluster_info': {},
-            'n_clusters': 1 if len(X) > 0 else 0
+            'n_clusters': 1 if len(X) > 0 else 0,
+            'method': 'single_state'
         }
     
-    # 클러스터링 수행
-    kmeans = KMeans(n_clusters=optimal_k, n_init=10, random_state=0)
-    labels = kmeans.fit_predict(X)
-    centroids = kmeans.cluster_centers_
+    # 여러 클러스터링 방법 시도
+    methods = {}
     
-    # 각 클러스터의 대표 상태 선택 (centroid에 가장 가까운 실제 상태)
+    # 1. K-Means
+    kmeans = KMeans(n_clusters=optimal_k, n_init=10, random_state=0)
+    kmeans_labels = kmeans.fit_predict(X)
+    kmeans_score = silhouette_score(X, kmeans_labels) if len(np.unique(kmeans_labels)) > 1 else -1
+    methods['kmeans'] = (kmeans_labels, kmeans_score, kmeans.cluster_centers_)
+    
+    # 2. 계층적 클러스터링
+    try:
+        from sklearn.cluster import AgglomerativeClustering
+        agg = AgglomerativeClustering(n_clusters=optimal_k)
+        agg_labels = agg.fit_predict(X)
+        agg_score = silhouette_score(X, agg_labels) if len(np.unique(agg_labels)) > 1 else -1
+        methods['hierarchical'] = (agg_labels, agg_score, None)
+    except:
+        pass
+    
+    # 3. DBSCAN (밀도 기반)
+    try:
+        from sklearn.cluster import DBSCAN
+        # eps 자동 조정
+        from sklearn.neighbors import NearestNeighbors
+        nn = NearestNeighbors(n_neighbors=4)
+        nn.fit(X)
+        distances, _ = nn.kneighbors(X)
+        eps = np.percentile(distances[:, -1], 90)  # 90퍼센타일을 eps로 사용
+        
+        dbscan = DBSCAN(eps=eps, min_samples=max(3, len(X) // 50))
+        dbscan_labels = dbscan.fit_predict(X)
+        
+        # 노이즈 포인트(-1)가 너무 많으면 제외
+        if len(np.unique(dbscan_labels[dbscan_labels != -1])) >= 2:
+            dbscan_score = silhouette_score(X[dbscan_labels != -1], dbscan_labels[dbscan_labels != -1])
+            methods['dbscan'] = (dbscan_labels, dbscan_score, None)
+    except:
+        pass
+    
+    # 최고 점수의 방법 선택
+    best_method = 'kmeans'
+    best_score = methods['kmeans'][1]
+    
+    for method_name, (labels, score, centers) in methods.items():
+        if score > best_score:
+            best_method = method_name
+            best_score = score
+    
+    labels, _, centroids = methods[best_method]
+    
+    # DBSCAN의 경우 노이즈 포인트 처리
+    if best_method == 'dbscan':
+        # 노이즈 포인트들을 가장 가까운 클러스터에 할당
+        noise_mask = labels == -1
+        if np.any(noise_mask):
+            valid_labels = labels[~noise_mask]
+            valid_points = X[~noise_mask]
+            noise_points = X[noise_mask]
+            
+            # 각 노이즈 포인트를 가장 가까운 클러스터에 할당
+            for i, noise_point in enumerate(noise_points):
+                distances_to_clusters = []
+                for cluster_id in np.unique(valid_labels):
+                    cluster_points = valid_points[valid_labels == cluster_id]
+                    min_dist = np.min(cdist([noise_point], cluster_points))
+                    distances_to_clusters.append(min_dist)
+                
+                closest_cluster = np.unique(valid_labels)[np.argmin(distances_to_clusters)]
+                labels[noise_mask][i] = closest_cluster
+    
+    # 클러스터 중심 계산 (centroids가 없는 경우)
+    if centroids is None:
+        unique_labels = np.unique(labels)
+        centroids = []
+        for cluster_id in unique_labels:
+            cluster_points = X[labels == cluster_id]
+            centroid = np.mean(cluster_points, axis=0)
+            centroids.append(centroid)
+        centroids = np.array(centroids)
+    
+    # 각 클러스터의 대표 상태 선택
     representatives = []
     cluster_info = {}
+    actual_clusters = len(np.unique(labels))
     
-    for cluster_id in range(optimal_k):
+    for i, cluster_id in enumerate(np.unique(labels)):
         cluster_mask = labels == cluster_id
         cluster_points = X[cluster_mask]
         cluster_indices = np.where(cluster_mask)[0]
@@ -88,11 +216,21 @@ def classify_states(X, recs, optimal_k):
             continue
             
         # centroid와의 거리 계산
-        distances = cdist([centroids[cluster_id]], cluster_points, metric='euclidean')[0]
+        if len(centroids) > i:
+            distances = cdist([centroids[i]], cluster_points, metric='euclidean')[0]
+        else:
+            # centroids가 부족한 경우 클러스터 중심 직접 계산
+            cluster_center = np.mean(cluster_points, axis=0)
+            distances = cdist([cluster_center], cluster_points, metric='euclidean')[0]
+        
         rep_idx_in_cluster = np.argmin(distances)
         rep_idx_global = cluster_indices[rep_idx_in_cluster]
         
         representatives.append(rep_idx_global)
+        
+        # 클러스터 내 다양성 계산
+        intra_cluster_distances = cdist(cluster_points, cluster_points)
+        diversity = np.mean(intra_cluster_distances[np.triu_indices_from(intra_cluster_distances, k=1)])
         
         # 클러스터 정보 저장
         cluster_info[f'cluster_{cluster_id}'] = {
@@ -100,15 +238,18 @@ def classify_states(X, recs, optimal_k):
             'representative_idx': int(rep_idx_global),
             'representative_state': recs[rep_idx_global]['state_after'],
             'centroid_distance': float(distances[rep_idx_in_cluster]),
-            'avg_distance_to_centroid': float(np.mean(distances))
+            'avg_distance_to_centroid': float(np.mean(distances)),
+            'intra_cluster_diversity': float(diversity) if not np.isnan(diversity) else 0.0
         }
     
     return {
         'labels': labels,
         'representatives': representatives,
         'cluster_info': cluster_info,
-        'n_clusters': optimal_k,
-        'centroids': centroids
+        'n_clusters': actual_clusters,
+        'centroids': centroids,
+        'method': best_method,
+        'silhouette_score': best_score
     }
 
 def richness(X, slot2i, val2i):
@@ -196,12 +337,14 @@ def main():
     print("🔍 Human states 클러스터링 중...")
     optimal_k_h = find_optimal_clusters(Xh, a.max_clusters)
     classification_h = classify_states(Xh, H, optimal_k_h)
-    print(f"   └ {optimal_k_h}개 클러스터 발견, {len(classification_h['representatives'])}개 대표 상태 선택")
+    print(f"   └ 방법: {classification_h['method']}, {classification_h['n_clusters']}개 클러스터, "
+          f"실루엣 스코어: {classification_h.get('silhouette_score', 0):.3f}")
 
     print("🔍 LLM states 클러스터링 중...")
     optimal_k_l = find_optimal_clusters(Xl, a.max_clusters)
     classification_l = classify_states(Xl, L, optimal_k_l)
-    print(f"   └ {optimal_k_l}개 클러스터 발견, {len(classification_l['representatives'])}개 대표 상태 선택")
+    print(f"   └ 방법: {classification_l['method']}, {classification_l['n_clusters']}개 클러스터, "
+          f"실루엣 스코어: {classification_l.get('silhouette_score', 0):.3f}")
 
     # 클러스터링 결과 시각화
     tsne_fig_with_clusters(Xh, classification_h['labels'], classification_h['representatives'],
@@ -248,9 +391,11 @@ def main():
         "human": {
             "richness_metrics": {k:_to_py(v) for k,v in Rh.items()},
             "clustering": {
+                "method": classification_h.get('method', 'unknown'),
+                "silhouette_score": float(classification_h.get('silhouette_score', 0)),
                 "n_clusters": int(classification_h['n_clusters']),
                 "cluster_info": {k: {
-                    **v, 
+                    **{kk: (vv if not isinstance(vv, dict) else vv) for kk, vv in v.items()},
                     "representative_state": v["representative_state"]
                 } for k, v in classification_h['cluster_info'].items()},
                 "representative_indices": [int(x) for x in classification_h['representatives']]
@@ -259,9 +404,11 @@ def main():
         "llm": {
             "richness_metrics": {k:_to_py(v) for k,v in Rl.items()},
             "clustering": {
+                "method": classification_l.get('method', 'unknown'),
+                "silhouette_score": float(classification_l.get('silhouette_score', 0)),
                 "n_clusters": int(classification_l['n_clusters']),
                 "cluster_info": {k: {
-                    **v,
+                    **{kk: (vv if not isinstance(vv, dict) else vv) for kk, vv in v.items()},
                     "representative_state": v["representative_state"]
                 } for k, v in classification_l['cluster_info'].items()},
                 "representative_indices": [int(x) for x in classification_l['representatives']]
@@ -273,13 +420,19 @@ def main():
     print("✔ saved →",out)
     
     # 대표 상태들 요약 출력
-    print("\n📊 Human 대표 상태들:")
+    print(f"\n📊 Human 대표 상태들 ({classification_h['method']} 방법):")
     for i, (cluster_name, info) in enumerate(classification_h['cluster_info'].items()):
-        print(f"  {cluster_name} (크기: {info['size']}): {info['representative_state']}")
+        diversity = info.get('intra_cluster_diversity', 0)
+        print(f"  {cluster_name} (크기: {info['size']}, 다양성: {diversity:.3f}): {info['representative_state']}")
     
-    print("\n📊 LLM 대표 상태들:")
+    print(f"\n📊 LLM 대표 상태들 ({classification_l['method']} 방법):")
     for i, (cluster_name, info) in enumerate(classification_l['cluster_info'].items()):
-        print(f"  {cluster_name} (크기: {info['size']}): {info['representative_state']}")
+        diversity = info.get('intra_cluster_diversity', 0)
+        print(f"  {cluster_name} (크기: {info['size']}, 다양성: {diversity:.3f}): {info['representative_state']}")
+    
+    print(f"\n🎯 클러스터링 품질:")
+    print(f"  Human - 실루엣 스코어: {classification_h.get('silhouette_score', 0):.3f}")
+    print(f"  LLM   - 실루엣 스코어: {classification_l.get('silhouette_score', 0):.3f}")
 
 if __name__=="__main__":
     np.random.seed(0); random.seed(0); main()

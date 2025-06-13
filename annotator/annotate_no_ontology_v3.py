@@ -15,6 +15,7 @@ from helper_token import count_tokens
 
 # ---------------- 타이머 시작 ----------------
 start = time.perf_counter()
+
 # ---------- 0. 환경 설정 ----------
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
@@ -24,7 +25,7 @@ client = OpenAI(api_key=api_key)
 
 # ---------- 1. 시스템 프롬프트 ----------
 SYSTEM_PROMPT = """
-You are "ConvLab3-Standard-Annotator", creating standard ConvLab-3 unified format for RL comparison research.
+You are \"ConvLab3-Standard-Annotator\", creating standard ConvLab-3 unified format for RL comparison research.
 
 ──────────────────────────────── CORE TASK
 Extract dialogue acts, maintain belief state, infer API calls from task-oriented dialogue turns. Use ONLY information explicitly mentioned in utterance text.
@@ -81,6 +82,8 @@ Return your response as valid JSON only. The output must be a single JSON object
   ]
 }
 
+• dialogue_id MUST exactly match the ID provided in the user prompt.
+
 ──────────────────────────────── REQUIREMENTS
 • turn_id starts at 0, increments sequentially
 • Include api_call/api_call_result only when system provides specific information
@@ -96,7 +99,10 @@ Output JSON object {"error": "description"} if:
 Always respond with properly formatted JSON - no other text or formatting.
 """
 
+# ---------- 1‑b. 사용자 프롬프트 템플릿 ----------
 USER_PROMPT_TMPL = """
+DIALOGUE ID: {dialogue_id}
+
 DIALOGUE HISTORY:
 
 {dialogue_text}
@@ -112,36 +118,44 @@ def hash_state(state: Dict[str, Any]) -> str:
     """JSON 직렬화를 통해 key 순서와 무관하게 state 해시 생성."""
     return hashlib.sha256(json.dumps(state, sort_keys=True).encode()).hexdigest()[:12]
 
+
 def join_utterances(dialogue: Dict[str, Any]) -> str:
     """turns 배열 → 'speaker: utterance' 줄바꿈 블록."""
     return "\n".join(f"{t['speaker']}: {t['utterance']}" for t in dialogue["turns"])
+
 
 def validate_convlab3_format(data: Dict[str, Any]) -> bool:
     """ConvLab-3 표준 형식 검증"""
     required_keys = ["dialogue_id", "services", "turns"]
     if not all(key in data for key in required_keys):
         return False
-    
+
     if not isinstance(data["services"], list):
         return False
-        
+
     for turn in data["turns"]:
         turn_required = ["turn_id", "speaker", "utterance", "dialogue_acts", "state", "state_update"]
         if not all(key in turn for key in turn_required):
             return False
-            
+
         if turn["speaker"] not in ["USER", "SYSTEM"]:
             return False
-            
+
         if not isinstance(turn["dialogue_acts"], list):
             return False
-            
+
     return True
 
 # ---------- 3. LLM 호출 및 결과 가공 ----------
+
 def annotate_dialogue(idx: int, dialogue: Dict[str, Any]) -> Dict[str, Any]:
     text_block = join_utterances(dialogue)
-    user_prompt = USER_PROMPT_TMPL.format(dialogue_text=text_block)
+    dlg_id = dialogue.get("dialogue_id", f"idx_{idx}")  # 원본 ID 확보
+
+    user_prompt = USER_PROMPT_TMPL.format(
+        dialogue_id=dlg_id,
+        dialogue_text=text_block
+    )
 
     try:
         resp = client.chat.completions.create(
@@ -159,20 +173,19 @@ def annotate_dialogue(idx: int, dialogue: Dict[str, Any]) -> Dict[str, Any]:
         # 에러 응답 체크
         if "error" in raw_json:
             return {
-                "dialogue_id": dialogue.get("dialogue_id", f"idx_{idx}"),
+                "dialogue_id": dlg_id,
                 "error": raw_json["error"]
             }
 
         # ConvLab-3 형식 검증
         if not validate_convlab3_format(raw_json):
             return {
-                "dialogue_id": dialogue.get("dialogue_id", f"idx_{idx}"),
+                "dialogue_id": dlg_id,
                 "error": "Invalid ConvLab-3 format"
             }
 
-        # dialogue_id 설정
-        if "dialogue_id" not in raw_json:
-            raw_json["dialogue_id"] = dialogue.get("dialogue_id", f"idx_{idx}")
+        # ★ 항상 원본 ID로 덮어쓰기 ★
+        raw_json["dialogue_id"] = dlg_id
 
         # turn_id 순서 검증 및 보정
         for i, turn in enumerate(raw_json["turns"]):
@@ -183,16 +196,17 @@ def annotate_dialogue(idx: int, dialogue: Dict[str, Any]) -> Dict[str, Any]:
 
     except json.JSONDecodeError as e:
         return {
-            "dialogue_id": dialogue.get("dialogue_id", f"idx_{idx}"),
+            "dialogue_id": dlg_id,
             "error": f"JSON decode error: {str(e)}"
         }
     except Exception as e:
         return {
-            "dialogue_id": dialogue.get("dialogue_id", f"idx_{idx}"),
+            "dialogue_id": dlg_id,
             "error": f"Processing error: {str(e)}"
         }
 
 # ---------- 4. 병렬 실행 ----------
+
 def annotate_batch(dialogues: List[Dict[str, Any]], max_workers: int = 20) -> List[Dict[str, Any]]:
     results = []
     with cf.ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -205,26 +219,27 @@ def annotate_batch(dialogues: List[Dict[str, Any]], max_workers: int = 20) -> Li
     return results
 
 # ---------- 5. 결과 분석 ----------
+
 def analyze_results(results: List[Dict[str, Any]]) -> Dict[str, Any]:
     """결과 분석 및 통계"""
     total = len(results)
     errors = sum(1 for r in results if "error" in r)
     success = total - errors
-    
+
     # 성공한 결과에서 통계 수집
     services_count = {}
     avg_turns = 0
     total_turns = 0
-    
+
     for r in results:
         if "error" not in r and "turns" in r:
             total_turns += len(r["turns"])
             for service in r.get("services", []):
                 services_count[service] = services_count.get(service, 0) + 1
-    
+
     if success > 0:
         avg_turns = total_turns / success
-    
+
     return {
         "total_dialogues": total,
         "successful": success,
@@ -249,11 +264,11 @@ if __name__ == "__main__":
     # 입력 파일 로드
     with open(args.input, "r", encoding="utf-8") as f:
         dialogues = json.load(f)
-    
+
     # MultiWOZ dict → list 변환
     if isinstance(dialogues, dict):
         dialogues = list(dialogues.values())
-    
+
     # 제한 적용
     if args.limit:
         dialogues = dialogues[:args.limit]
@@ -262,31 +277,28 @@ if __name__ == "__main__":
 
     # 어노테이션 실행
     annotated = annotate_batch(dialogues, max_workers=args.threads)
+
     # ---------------- 비용 계산 ------------------
-    PROMPT_PRICE   = 0.00000015   # $ / token  (gpt-4o-mini, 2025-06 기준)
+    PROMPT_PRICE = 0.00000015   # $ / token  (gpt-4o-mini, 2025-06 기준)
     COMPLETION_PRICE = 0.00000060
 
     prompt_total, completion_total = 0, 0
     for dlg_raw, dlg_orig in zip(annotated, dialogues):
         # 1) 프롬프트 토큰 = SYSTEM_PROMPT + USER_PROMPT
-        user_prompt = USER_PROMPT_TMPL.format(dialogue_text=join_utterances(dlg_orig))
+        user_prompt = USER_PROMPT_TMPL.format(
+            dialogue_id=dlg_orig.get("dialogue_id"),
+            dialogue_text=join_utterances(dlg_orig)
+        )
         prompt_total += count_tokens(SYSTEM_PROMPT) + count_tokens(user_prompt)
 
         # 2) 응답 토큰 = GPT가 준 JSON 문자열
-        if "error" not in dlg_raw:
-            completion_total += count_tokens(json.dumps(dlg_raw))
-        else:
-            # 에러 응답도 모델이 토큰을 썼으므로 포함
-            completion_total += count_tokens(json.dumps(dlg_raw))
+        completion_total += count_tokens(json.dumps(dlg_raw))
 
-    cost_input  = prompt_total    * PROMPT_PRICE
+    cost_input = prompt_total * PROMPT_PRICE
     cost_output = completion_total * COMPLETION_PRICE
-    cost_total  = cost_input + cost_output
+    cost_total = cost_input + cost_output
 
     elapsed = time.perf_counter() - start
-
-    
-
 
     # 결과 저장
     with open(args.output, "w", encoding="utf-8") as f:
