@@ -1,0 +1,17 @@
+{
+  "human_metrics": {
+    "consistency": 0.03767705382436261,
+    "predictability": 0.9995294014890979,
+    "stability": 3.39913336543091
+  },
+  "llm_metrics": {
+    "consistency": 0.038368622992752593,
+    "predictability": 0.983677343987529,
+    "stability": 1.5544510713496797
+  },
+  "dynamics_advantage": {
+    "consistency": 0.0006915691683899855,
+    "predictability": -0.015852057501568817,
+    "stability": -1.8446822940812302
+  }
+}
