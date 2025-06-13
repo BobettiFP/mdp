@@ -1,38 +1,27 @@
 #!/usr/bin/env python3
 """
-Dynamic Slot Analyzer — self-merging edition
--------------------------------------------
-• 사람·LLM 주석 JSON → (state_before, action, state_after) 레코드
-• 슬롯 표준화:
-    ① 기본 정규화(lower + 공백·하이픈 → 언더바)
-    ② edit distance ≤ EDIT_DIST_MAX  → 병합
-    ③ 임베딩 코사인 유사도 ≥ EMBED_SIM_MIN → 병합
-      *sentence-transformers가 설치돼 있을 때만 사용
-
-CLI
-$ python dynamic_slot_analyzer.py \
-        --human dialogues_001.json \
-        --llm   full_annotation.json \
-        --export processed_annotations.json
+Dynamic Slot Analyzer — strict double-check merge
+------------------------------------------------
+• edit distance AND semantic similarity가 모두 임계값을 만족할 때만 슬롯 병합
+• 입력·출력·CLI 형식은 기존과 동일
 """
-import json, pathlib, argparse, collections, itertools, os, re
+import json, pathlib, argparse, collections, os, re, itertools
 from typing import Dict, List, Tuple, Set
 
-# ──────────────────────────────────────────────────────────────────────────────
-# 옵션: 임계치 / 모델
-EDIT_DIST_MAX  = 2       # <= 2이면 같은 슬롯으로 간주
-EMBED_SIM_MIN  = 0.90    # >= 0.90이면 같은 슬롯
+# ────────────────────────────── 설정 ──────────────────────────────
+EDIT_DIST_MAX  = 2       # Levenshtein 거리 임계값 (<=)
+EMBED_SIM_MIN  = 0.90    # 코사인 유사도 임계값 (>=)
 EMBED_MODEL_ID = os.getenv("SENTENCE_MODEL", "all-MiniLM-L6-v2")
 
-# RapidFuzz(권장) → 실패 시 difflib 대체
+# RapidFuzz 우선, 없으면 difflib
 try:
     from rapidfuzz.distance import Levenshtein
-    _levenshtein = lambda a, b: Levenshtein.distance(a, b)
+    _lev = lambda a, b: Levenshtein.distance(a, b)
 except ImportError:
     from difflib import SequenceMatcher
-    _levenshtein = lambda a, b: int(round((1 - SequenceMatcher(None, a, b).ratio()) * max(len(a), len(b))))
+    _lev = lambda a, b: int(round((1 - SequenceMatcher(None, a, b).ratio()) * max(len(a), len(b))))
 
-# sentence-transformers(선택)
+# sentence-transformers (없으면 임베딩 병합 불가)
 try:
     from sentence_transformers import SentenceTransformer
     import numpy as np
@@ -41,98 +30,103 @@ except ImportError:
     SentenceTransformer = None
     _embed_model = None
 
-# 동적 매핑 전역
+# 보호 접미사 ― 절대 다른 슬롯과 합치지 않는다
+PROTECTED_SUFFIX = {"name", "phone", "ref", "reference", "reference_number"}
+
+# 동적 매핑
 _DYNAMIC_MAP: Dict[str, str] = {}
 
-# ────────────────────────────────────────────── 1. 기본 정규화
-_COMMON_SPLIT = re.compile(r"[-\s]+")
-def _canon_basic(slot: str) -> str:
-    s = _COMMON_SPLIT.sub("_", slot.lower())
+# ────────────────────────────── 기본 정규화 ──────────────────────────────
+_SPLIT = re.compile(r"[-\s]+")
+def _canon_basic(s: str) -> str:
+    s = _SPLIT.sub("_", s.lower())
     s = re.sub(r"_+", "_", s).strip("_")
     return s
 
 def canon(slot: str) -> str:
-    """스크립트 전역에서 쓰이는 공식 Canon 함수"""
-    basic = _canon_basic(slot)
-    return _DYNAMIC_MAP.get(basic, basic)
+    b = _canon_basic(slot)
+    return _DYNAMIC_MAP.get(b, b)
 
-# ────────────────────────────────────────────── 2. 슬롯 추출(원본 이름 수집용)
+# ────────────────────────────── 원본 슬롯 수집 ──────────────────────────────
 def _raw_slot_names(turn: Dict) -> List[str]:
-    names: List[str] = []
-    if "slots" in turn and isinstance(turn["slots"], dict):
-        names.extend(turn["slots"].keys())
+    res = []
+    if isinstance(turn.get("slots"), dict):
+        res.extend(turn["slots"].keys())
     for f in turn.get("frames", []):
-        sv = f.get("state", {}).get("slot_values", {})
-        names.extend(sv.keys())
-    if "state" in turn and isinstance(turn["state"], dict):
-        for dom, dom_slots in turn["state"].items():
-            if isinstance(dom_slots, dict):
-                names.extend(f"{dom}_{k}" for k in dom_slots.keys())
-    return names
+        res.extend(f.get("state", {}).get("slot_values", {}).keys())
+    if isinstance(turn.get("state"), dict):
+        for dom, m in turn["state"].items():
+            if isinstance(m, dict):
+                res.extend(f"{dom}_{k}" for k in m.keys())
+    return res
 
-# ────────────────────────────────────────────── 3. 동적 병합 매핑 생성
+# ────────────────────────────── 병합 로직 ──────────────────────────────
 def _build_dynamic_map(raw_names: Set[str]) -> Dict[str, str]:
-    basic_names = sorted({_canon_basic(n) for n in raw_names})
-    if len(basic_names) <= 1:
-        return {n: n for n in basic_names}
+    basics = sorted({_canon_basic(n) for n in raw_names})
+    if len(basics) <= 1:
+        return {n: n for n in basics}
 
-    # 유사도 계산 준비(임베딩은 옵션)
     if _embed_model:
-        emb = _embed_model.encode(basic_names, normalize_embeddings=True)
+        emb = _embed_model.encode(basics, normalize_embeddings=True)
     else:
         emb = None
 
-    # Union–Find
-    parent = {n: n for n in basic_names}
+    parent = {n: n for n in basics}
+
     def find(x):
         while parent[x] != x:
             parent[x] = parent[parent[x]]
             x = parent[x]
         return x
+
     def union(a, b):
         ra, rb = find(a), find(b)
         if ra != rb:
             parent[rb] = ra
 
-    # 모든 쌍 비교(소규모 슬롯 집합 가정)
-    for i, a in enumerate(basic_names):
-        for j in range(i + 1, len(basic_names)):
-            b = basic_names[j]
-            similar = False
+    # 모든 쌍 비교
+    for i, a in enumerate(basics):
+        suf_a = a.split('_')[-1]
+        for j in range(i + 1, len(basics)):
+            b = basics[j]
+            suf_b = b.split('_')[-1]
+
+            # 보호 접미사 충돌 차단
+            if suf_a in PROTECTED_SUFFIX or suf_b in PROTECTED_SUFFIX:
+                continue
 
             # ① edit distance
-            if _levenshtein(a, b) <= EDIT_DIST_MAX:
-                similar = True
-            # ② embedding
-            elif emb is not None:
-                sim = float(np.dot(emb[i], emb[j]))
-                if sim >= EMBED_SIM_MIN:
-                    similar = True
+            if _lev(a, b) > EDIT_DIST_MAX:
+                continue
 
-            if similar:
-                union(a, b)
+            # ② embedding (없으면 병합 불가)
+            if emb is None:
+                continue
+            sim = float(np.dot(emb[i], emb[j]))
+            if sim < EMBED_SIM_MIN:
+                continue
 
-    # 대표값(짧은 문자열 우선) 결정
+            union(a, b)
+
+    # 대표 슬롯: 언더바 많은 것(도메인 포함) → 길이 긴 것 → 알파벳
     clusters: Dict[str, Set[str]] = collections.defaultdict(set)
-    for n in basic_names:
+    for n in basics:
         clusters[find(n)].add(n)
 
     mapping: Dict[str, str] = {}
     for root, members in clusters.items():
-        rep = sorted(members, key=lambda x: (len(x), x))[0]
+        rep = max(members, key=lambda x: (x.count('_'), len(x), x))
         for m in members:
             mapping[m] = rep
     return mapping
 
-# ────────────────────────────────────────────── 4. 턴별 슬롯 채집
+# ────────────────────────────── 슬롯 추출 ──────────────────────────────
 def _extract_turn_slots(turn: Dict) -> Dict[str, str]:
-    slots: Dict[str, str] = {}
-
-    # 1) direct "slots"
-    if "slots" in turn and isinstance(turn["slots"], dict):
-        slots.update({canon(k): v for k, v in turn["slots"].items()})
-
-    # 2) MultiWOZ frames
+    out: Dict[str, str] = {}
+    # direct "slots"
+    if isinstance(turn.get("slots"), dict):
+        out.update({canon(k): v for k, v in turn["slots"].items()})
+    # MultiWOZ frames
     for f in turn.get("frames", []):
         sv = f.get("state", {}).get("slot_values", {})
         for k, vals in sv.items():
@@ -141,27 +135,25 @@ def _extract_turn_slots(turn: Dict) -> Dict[str, str]:
                 val = vals[-1]
                 if isinstance(val, dict) and "value" in val:
                     val = val["value"]
-                slots[key] = val
+                out[key] = val
             elif isinstance(vals, str):
-                slots[key] = vals
-
-    # 3) Schema/SGD nested "state"
-    if "state" in turn and isinstance(turn["state"], dict):
-        for dom, dom_slots in turn["state"].items():
-            if not isinstance(dom_slots, dict):
+                out[key] = vals
+    # Schema/SGD state
+    if isinstance(turn.get("state"), dict):
+        for dom, m in turn["state"].items():
+            if not isinstance(m, dict):
                 continue
-            for raw_slot, val in dom_slots.items():
+            for raw, val in m.items():
                 if isinstance(val, dict) and "value" in val:
                     val = val["value"]
                 if isinstance(val, list) and val:
                     last = val[-1]
                     val = last["value"] if isinstance(last, dict) and "value" in last else last
-                key = canon(f"{dom}_{raw_slot}")
-                slots[key] = val
+                key = canon(f"{dom}_{raw}")
+                out[key] = val
+    return out
 
-    return slots
-
-# ────────────────────────────────────────────── 5. 파일 로드
+# ────────────────────────────── 파일 로드 ──────────────────────────────
 def load_turns(path: pathlib.Path, ann_type: str) -> List[Dict]:
     try:
         with path.open("r", encoding="utf-8") as f:
@@ -176,8 +168,8 @@ def load_turns(path: pathlib.Path, ann_type: str) -> List[Dict]:
     turns: List[Dict] = []
     for dlg in data:
         did = dlg.get("dialogue_id") or dlg.get("dialogueID") or "unknown"
-        dialogue_turns = dlg.get("dialogue") or dlg.get("turns") or []
-        for i, t in enumerate(dialogue_turns):
+        dturns = dlg.get("dialogue") or dlg.get("turns") or []
+        for i, t in enumerate(dturns):
             t = dict(t)
             t["dialogue_id"] = did
             t["annotation_type"] = ann_type
@@ -188,19 +180,18 @@ def load_turns(path: pathlib.Path, ann_type: str) -> List[Dict]:
             turns.append(t)
     return turns
 
-# ────────────────────────────────────────────── 6. 레코드 구축
+# ────────────────────────────── 레코드 생성 ──────────────────────────────
 def build_records(turns: List[Dict]) -> List[Dict]:
-    by_dlg = collections.defaultdict(list)
+    by = collections.defaultdict(list)
     for t in turns:
-        by_dlg[(t["annotation_type"], t["dialogue_id"])].append(t)
+        by[(t["annotation_type"], t["dialogue_id"])].append(t)
 
     recs: List[Dict] = []
-    for (_atype, _did), tl in by_dlg.items():
+    for key, tl in by.items():
         tl.sort(key=lambda x: x["turn_id"])
         prev = {}
         for tr in tl:
             cur = _extract_turn_slots(tr)
-
             add  = {k: v for k, v in cur.items() if prev.get(k) != v}
             dele = {k: None for k in prev if k not in cur}
 
@@ -225,45 +216,35 @@ def build_records(turns: List[Dict]) -> List[Dict]:
             prev = cur
     return recs
 
-# ────────────────────────────────────────────── 7. CLI
+# ────────────────────────────── CLI ──────────────────────────────
 def _cli() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--human", required=True, help="Human annotation file path")
-    ap.add_argument("--llm",   required=True, help="LLM annotation file path")
-    ap.add_argument("--export", required=True, help="Output file path")
+    ap.add_argument("--human", required=True)
+    ap.add_argument("--llm",   required=True)
+    ap.add_argument("--export", required=True)
     args = ap.parse_args()
 
-    print(f"Loading human annotations from {args.human} …")
     human = load_turns(pathlib.Path(args.human), "human")
-    print(f"Loading LLM annotations from {args.llm} …")
     llm   = load_turns(pathlib.Path(args.llm),   "llm")
-
     all_turns = human + llm
-    print(f"Collected {len(all_turns):,} turns → building slot map …")
 
-    # ① 모든 원본 슬롯 이름 수집
-    raw_names: Set[str] = set()
+    raw: Set[str] = set()
     for t in all_turns:
-        raw_names.update(_raw_slot_names(t))
+        raw.update(_raw_slot_names(t))
 
-    # ② 동적 매핑 생성 & 전역 등록
     global _DYNAMIC_MAP
-    _DYNAMIC_MAP = _build_dynamic_map(raw_names)
+    _DYNAMIC_MAP = _build_dynamic_map(raw)
 
-    # ③ 레코드 생성
     recs = build_records(all_turns)
-
-    # ④ raw → 최종 Canon 매핑(json 출력용)
-    raw_to_final = {name: canon(name) for name in raw_names}
+    raw_to_final = {n: canon(n) for n in raw}
 
     out = {"annotations": recs, "canonical_map": raw_to_final}
-    output_path = pathlib.Path(args.export)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    with output_path.open("w", encoding="utf-8") as f:
+    out_path = pathlib.Path(args.export)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with out_path.open("w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
 
-    print(f"✔ {args.export} written — {len(recs):,} records "
-          f"(human={len(human)}, llm={len(llm)})")
+    print(f"✔ {args.export} written  ({len(recs):,} records)")
 
 if __name__ == "__main__":
     _cli()
