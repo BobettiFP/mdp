@@ -1,0 +1,20 @@
+{
+  "human": {
+    "reward_stats": {
+      "mean": 0.3140242319940098,
+      "std": 0.17106698872590614,
+      "median": 0.37208992,
+      "max": 1.0879334
+    },
+    "sample_efficiency": 1424.0
+  },
+  "llm": {
+    "reward_stats": {
+      "mean": 0.682549586409742,
+      "std": 0.5411084364869,
+      "median": 1.0419854,
+      "max": 1.3179832
+    },
+    "sample_efficiency": 3.0
+  }
+}

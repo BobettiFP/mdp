@@ -1,0 +1,179 @@
+{
+  "configuration": {
+    "max_samples_clustering": 8000,
+    "max_samples_visualization": 5000,
+    "sampling_strategy": "smart",
+    "optimal_dimensions": true,
+    "dimension_method": "pca",
+    "variance_threshold": 0.95,
+    "max_components": null,
+    "min_components": 3,
+    "clustering_methods": [
+      "kmeans"
+    ],
+    "cluster_range": "auto",
+    "max_clusters_search": 15,
+    "use_reduced_dims_for_clustering": true,
+    "kmeans_config": {
+      "n_init": 5,
+      "max_iter": 100,
+      "tol": 0.0001
+    },
+    "generate_all_visualizations": true,
+    "visualization_methods": [
+      "pca",
+      "umap",
+      "tsne"
+    ],
+    "fallback_method": "pca",
+    "umap_config": {
+      "n_neighbors": 50,
+      "min_dist": 0.1,
+      "metric": "euclidean",
+      "n_epochs": 200
+    },
+    "tsne_config": {
+      "perplexity": 30,
+      "max_iter": 250,
+      "early_exaggeration": 12.0
+    },
+    "pca_config": {
+      "n_components": 2
+    },
+    "performance_mode": "balanced",
+    "adaptive_sampling": true,
+    "parallel_processing": true,
+    "plot_dpi": 200,
+    "save_formats": [
+      "png"
+    ],
+    "include_sample_info": true
+  },
+  "data_info": {
+    "total_human_states": 7060,
+    "total_llm_states": 7037,
+    "sampled_human": 7060,
+    "sampled_llm": 7037,
+    "available_methods": [
+      "pca",
+      "umap",
+      "tsne"
+    ]
+  },
+  "visualization": {
+    "human_clustered": {
+      "pca": {
+        "method": "PCA (25.8%)",
+        "file_saved": true,
+        "shape": [
+          5000,
+          2
+        ]
+      },
+      "umap": {
+        "method": "UMAP",
+        "file_saved": true,
+        "shape": [
+          5000,
+          2
+        ]
+      },
+      "tsne": {
+        "method": "t‑SNE",
+        "file_saved": true,
+        "shape": [
+          5000,
+          2
+        ]
+      }
+    },
+    "llm_clustered": {
+      "pca": {
+        "method": "PCA (13.3%)",
+        "file_saved": true,
+        "shape": [
+          5000,
+          2
+        ]
+      },
+      "umap": {
+        "method": "UMAP",
+        "file_saved": true,
+        "shape": [
+          5000,
+          2
+        ]
+      },
+      "tsne": {
+        "method": "t‑SNE",
+        "file_saved": true,
+        "shape": [
+          5000,
+          2
+        ]
+      }
+    },
+    "human_overview": {
+      "pca": {
+        "method": "PCA (25.8%)",
+        "file_saved": true,
+        "shape": [
+          5000,
+          2
+        ]
+      },
+      "umap": {
+        "method": "UMAP",
+        "file_saved": true,
+        "shape": [
+          5000,
+          2
+        ]
+      },
+      "tsne": {
+        "method": "t‑SNE",
+        "file_saved": true,
+        "shape": [
+          5000,
+          2
+        ]
+      }
+    },
+    "llm_overview": {
+      "pca": {
+        "method": "PCA (13.3%)",
+        "file_saved": true,
+        "shape": [
+          5000,
+          2
+        ]
+      },
+      "umap": {
+        "method": "UMAP",
+        "file_saved": true,
+        "shape": [
+          5000,
+          2
+        ]
+      },
+      "tsne": {
+        "method": "t‑SNE",
+        "file_saved": true,
+        "shape": [
+          5000,
+          2
+        ]
+      }
+    },
+    "comparison": {
+      "pca": true,
+      "tsne": true,
+      "umap": true
+    }
+  },
+  "human": {
+    "richness": {
+      "unique_states": 2068,
+      "state_entropy": 4.281948836462713,
+      "coverage_ratio": 0.2929178470254957,
+      "effective_dim": 

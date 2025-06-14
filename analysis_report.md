@@ -1,59 +1,55 @@
-# 대화 시스템 PPO 학습 결과 분석 리포트
+# Reinforcement Learning Results Analysis Report
 
-생성 시간: 2025-06-06 22:41:28
+Generated: 2025-06-13 18:00:26
 
-## 전체 요약
+## Summary
 
-- 총 에피소드 수: 102,384
-- 환경 타입 수: 2
-- 분석된 환경: human, llm
+- Total episodes: 97,449
+- Environments: 4
+- Analyzed: llm_hard, human_normal, human_hard, llm_normal
 
-## 환경별 상세 분석
+## Environment Analysis
 
-### HUMAN 환경
+### LLM_HARD
 
-#### 기본 통계
-- 에피소드 수: 51,200
-- 평균 보상: 0.089
-- 보상 표준편차: 0.048
-- 최대 보상: 1.000
-- 최소 보상: -0.100
-- 전체 성공률: 94.5%
+#### Basic Statistics
+- Episodes: 18,630
+- Mean reward: 0.142
+- Reward std: 0.387
+- Max reward: 0.802
+- Min reward: -2.565
+- Success rate: 57.9%
+- Mean episode length: 1.65
 
-#### 학습 진행도
-- 초기 평균 보상: 0.070
-- 후기 평균 보상: 0.098
-- 보상 개선도: +0.028
-- 초기 성공률: 84.8%
-- 후기 성공률: 99.0%
-- 성공률 개선: +14.1%
+### HUMAN_NORMAL
 
-### LLM 환경
+#### Basic Statistics
+- Episodes: 30,717
+- Mean reward: 0.314
+- Reward std: 0.171
+- Max reward: 1.088
+- Min reward: -0.191
+- Success rate: 87.1%
+- Mean episode length: 1.00
 
-#### 기본 통계
-- 에피소드 수: 51,184
-- 평균 보상: 0.452
-- 보상 표준편차: 0.380
-- 최대 보상: 1.000
-- 최소 보상: -0.100
-- 전체 성공률: 74.2%
+### HUMAN_HARD
 
-#### 학습 진행도
-- 초기 평균 보상: 0.336
-- 후기 평균 보상: 0.520
-- 보상 개선도: +0.183
-- 초기 성공률: 59.6%
-- 후기 성공률: 82.7%
-- 성공률 개선: +23.1%
+#### Basic Statistics
+- Episodes: 19,480
+- Mean reward: 0.055
+- Reward std: 0.258
+- Max reward: 0.673
+- Min reward: -2.474
+- Success rate: 64.6%
+- Mean episode length: 1.58
 
-## 환경 간 비교
+### LLM_NORMAL
 
-| 환경 | 에피소드수 | 평균보상 | 성공률(%) | 보상분산 |
-|------|------------|----------|-----------|----------|
-| human | 51,200 | 0.089 | 94.5 | 0.002 |
-| llm | 51,184 | 0.452 | 74.2 | 0.144 |
-
-## 권장사항
-
-- **최고 성능 환경**: llm
-- human: 보상이 낮습니다. 보상 함수나 환경 설정을 검토하세요.
+#### Basic Statistics
+- Episodes: 28,622
+- Mean reward: 0.683
+- Reward std: 0.541
+- Max reward: 1.318
+- Min reward: -0.377
+- Success rate: 71.0%
+- Mean episode length: 1.07

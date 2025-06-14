@@ -1,0 +1,18 @@
+{
+  "human": {
+    "strategic_metrics": {
+      "planning_depth": 1.0973621729744178,
+      "goal_directedness": 0.0,
+      "behavioural_complexity": -1.4426951595367385e-09
+    },
+    "strategic_score": 0.4389448687569586
+  },
+  "llm": {
+    "strategic_metrics": {
+      "planning_depth": 0.7945961182349404,
+      "goal_directedness": 0.0,
+      "behavioural_complexity": 0.965860709079492
+    },
+    "strategic_score": 0.6075966600178238
+  }
+}
