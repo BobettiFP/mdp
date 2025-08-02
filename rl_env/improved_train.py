@@ -88,8 +88,6 @@ def run_experiment(env, steps: int, env_name: str, output_dir: str) -> Dict:
     print(f"{'='*50}")
     print(f"Obs space: {env.observation_space}")
     print(f"Action space: {env.action_space}")
-    trans_file = p.Path(LOG_DIR) / f"{env_name}_transitions.jsonl"
-    env = TransitionLogger(env, str(trans_file))
 
     # PPO 하이퍼파라미터
     if "hard" in env_name:

@@ -3,18 +3,18 @@
 learning_analysis.py
 ====================
 Visualise PPO training logs for **human‑annotated** vs **LLM‑annotated**
-Dialog MDP environments.
+Dialog MDP environments.
 
 Expected CSV columns
 --------------------
 * **episode**  (int)        – 0‑based episode index
 * **reward**   (float)      – episodic return
-* (opt) **f1** or **success_rate**           – quality metric
-* (opt) **epsilon** / **exploration_rate**   – exploration schedule
+* (opt) **f1** or **success_rate**           – quality metric (if missing, shows MA-100 trend)
+* (opt) **epsilon** / **exploration_rate**   – exploration schedule (if missing, computed metrics are used)
 
 Two figures are produced in `--outdir` (created if absent):
-1. `learning_efficiency_analysis.png`  – 2×2 composite
-2. `reward_quality_analysis.png`       – 2×3 composite
+1. `learning_efficiency_analysis.png`  – 2×2 learning trends & stability
+2. `detailed_reward_analysis.png`      – 2×3 comprehensive reward analysis
 
 CLI examples
 ------------
@@ -80,53 +80,53 @@ def _find_col(df: pd.DataFrame, *candidates: str) -> Optional[str]:
 
 
 def plot_learning(axs, df: pd.DataFrame, label: str, color: str):
-    """Fill a 2×2 `axs` grid."""
+    """Fill a 2×2 `axs` grid with learning efficiency metrics."""
     ep = df["episode"]
 
-    # (0,0) cumulative average reward
+    # (0,0) cumulative average reward - 전체 학습 효율성
     axs[0, 0].plot(ep, df["reward"].expanding().mean(), color=color, label=label)
 
-    # (0,1) metric convergence (F1 or success_rate)
+    # (0,1) long-term trend (MA-100) - 장기 트렌드  
     metric_col = _find_col(df, "f1", "success_rate")
     if metric_col:
         axs[0, 1].plot(ep, roll_mean(df[metric_col], 20), color=color, label=label)
     else:
-        axs[0, 1].text(0.5, 0.5, "<metric missing>", ha="center", va="center", transform=axs[0, 1].transAxes)
+        axs[0, 1].plot(ep, roll_mean(df["reward"], 100), color=color, label=label)
 
-    # (1,0) exploration rate
-    eps_col = _find_col(df, "epsilon", "exploration_rate", "eps", "explore", "e")
-    if eps_col:
-        axs[1, 0].plot(ep, df[eps_col], color=color, label=label)
-    else:
-        axs[1, 0].text(0.5, 0.5, "<exploration rate missing>", ha="center", va="center", transform=axs[1, 0].transAxes, fontsize=9, color="gray")
-        axs[1, 0].set_xticks([])
-        axs[1, 0].set_yticks([])
-        axs[1, 0].set_frame_on(False)
+    # (1,0) short-term trend (MA-20) - 단기 트렌드
+    axs[1, 0].plot(ep, roll_mean(df["reward"], 20), color=color, label=label)
 
-    # (1,1) reward variance (30‑episode)
+    # (1,1) learning stability (variance) - 학습 안정성
     axs[1, 1].plot(ep, roll_var(df["reward"], 30), color=color, label=label)
 
 
 def plot_reward(axs, df: pd.DataFrame, label: str, color: str):
-    """Fill a 2×3 `axs` grid."""
+    """Fill a 2×3 `axs` grid with detailed reward analysis."""
     ep = df["episode"]
 
-    # (0,0) reward distribution
+    # (0,0) reward distribution histogram - 보상 분포
     axs[0, 0].hist(df["reward"], bins=40, alpha=0.6, density=True, color=color, label=label)
 
-    # (0,1) reward evolution (MA‑100)
-    axs[0, 1].plot(ep, roll_mean(df["reward"], 100), linewidth=1.2, color=color, label=label)
+    # (0,1) reward distribution over time (percentiles) - 시간에 따른 분포 변화
+    rolling_median = df["reward"].rolling(200, min_periods=1).median()
+    rolling_25 = df["reward"].rolling(200, min_periods=1).quantile(0.25)
+    rolling_75 = df["reward"].rolling(200, min_periods=1).quantile(0.75)
+    
+    axs[0, 1].plot(ep, rolling_median, color=color, label=f"{label} (median)", linewidth=2)
+    axs[0, 1].plot(ep, rolling_25, color=color, alpha=0.5, linestyle='--', linewidth=1)
+    axs[0, 1].plot(ep, rolling_75, color=color, alpha=0.5, linestyle='--', linewidth=1)
+    axs[0, 1].fill_between(ep, rolling_25, rolling_75, color=color, alpha=0.1)
 
-    # (0,2) reward variance (50‑ep)
+    # (0,2) reward variance (50‑ep) - 변동성
     axs[0, 2].plot(ep, roll_var(df["reward"], 50), color=color, label=label)
 
-    # (1,0) cumulative reward
+    # (1,0) cumulative reward - 누적 보상
     axs[1, 0].plot(ep, df["reward"].cumsum(), color=color, label=label)
 
-    # (1,1) reward Δ (MA‑100 of diff)
+    # (1,1) reward change (MA‑100 of diff) - 변화율
     axs[1, 1].plot(ep, roll_mean(df["reward"].diff(), 100), linewidth=1.2, color=color, label=label)
 
-    # (1,2) FFT magnitude spectrum (demeaned)
+    # (1,2) FFT magnitude spectrum (demeaned) - 주파수 분석
     demeaned = (df["reward"] - df["reward"].mean()).values
     yf = np.abs(rfft(demeaned))
     xf = rfftfreq(len(demeaned), d=1)
@@ -153,7 +153,7 @@ def main():
     ap.add_argument("--llm-log",   required=True, help="CSV path for LLM‑annotated run")
     ap.add_argument("--outdir", default="analysis_plots", help="Output directory for images")
     ap.add_argument("--max-points", type=int, default=2000, help="Downsample each curve to at most N points")
-    ap.add_argument("--head", type=int, default=None, help="Use only the first N episodes")
+    ap.add_argument("--head", type=int, default=50000, help="Use only the first N episodes (default: 50000)")
     args = ap.parse_args()
 
     outdir = Path(args.outdir); outdir.mkdir(parents=True, exist_ok=True)
@@ -164,6 +164,7 @@ def main():
     if args.head:
         h_df = h_df[h_df["episode"] < args.head]
         l_df = l_df[l_df["episode"] < args.head]
+        print(f"📊 Analyzing first {args.head} episodes")
 
     h_df = downsample(h_df, target=args.max_points)
     l_df = downsample(l_df, target=args.max_points)
@@ -175,7 +176,64 @@ def main():
 
     axs1[0, 0].set_title("Cumulative Average Reward (Learning Efficiency)")
     axs1[0, 0].set_xlabel("Episode"); axs1[0, 0].set_ylabel("Cumulative Avg Reward")
+    axs1[0, 0].legend()
 
     axs1[0, 1].set_title("Metric Convergence (MA‑20)"); axs1[0, 1].set_xlabel("Episode")
+    axs1[0, 1].legend()
+    
     axs1[1, 0].set_title("Exploration Rate")
-    axs1[1, 1].set_title("Learning Stability (30‑episode variance)"); axs1[1, 1].set_xlabel("Episode")
+    axs1[1, 0].set_xlabel("Episode")
+    axs1[1, 0].legend()
+    
+    axs1[1, 1].set_title("Learning Stability (30‑episode variance)")
+    axs1[1, 1].set_xlabel("Episode")
+    axs1[1, 1].set_ylabel("Reward Variance")
+    axs1[1, 1].legend()
+
+    plt.tight_layout()
+    fig1_path = outdir / "learning_efficiency_analysis.png"
+    plt.savefig(fig1_path, dpi=200, bbox_inches='tight')
+    print(f"✓ Saved learning efficiency plot: {fig1_path}")
+
+    # ---------------- Reward quality analysis (2×3) ----------------
+    fig2, axs2 = plt.subplots(2, 3, figsize=(15, 8))
+    plot_reward(axs2, h_df, "Human", "royalblue")
+    plot_reward(axs2, l_df, "LLM",   "orange")
+
+    axs2[0, 0].set_title("Reward Distribution")
+    axs2[0, 0].set_xlabel("Reward"); axs2[0, 0].set_ylabel("Density")
+    axs2[0, 0].legend()
+
+    axs2[0, 1].set_title("Reward Evolution (MA‑100)")
+    axs2[0, 1].set_xlabel("Episode"); axs2[0, 1].set_ylabel("Reward")
+    axs2[0, 1].legend()
+
+    axs2[0, 2].set_title("Reward Variance (50‑episode)")
+    axs2[0, 2].set_xlabel("Episode"); axs2[0, 2].set_ylabel("Variance")
+    axs2[0, 2].legend()
+
+    axs2[1, 0].set_title("Cumulative Reward")
+    axs2[1, 0].set_xlabel("Episode"); axs2[1, 0].set_ylabel("Cumulative Reward")
+    axs2[1, 0].legend()
+
+    axs2[1, 1].set_title("Reward Change (MA‑100)")
+    axs2[1, 1].set_xlabel("Episode"); axs2[1, 1].set_ylabel("Reward Δ")
+    axs2[1, 1].legend()
+
+    axs2[1, 2].set_title("FFT Magnitude Spectrum")
+    axs2[1, 2].set_xlabel("Frequency"); axs2[1, 2].set_ylabel("Magnitude")
+    axs2[1, 2].legend()
+
+    plt.tight_layout()
+    fig2_path = outdir / "detailed_reward_analysis.png"
+    plt.savefig(fig2_path, dpi=200, bbox_inches='tight')
+    print(f"✓ Saved detailed analysis plot: {fig2_path}")
+
+    plt.show()  # 선택사항: GUI에서 플롯 보기
+    print(f"\n📊 Analysis complete! Plots saved in: {outdir}")
+    print(f"   📈 Learning trends: learning_efficiency_analysis.png")
+    print(f"   🔍 Detailed analysis: detailed_reward_analysis.png")
+
+
+if __name__ == "__main__":
+    main()

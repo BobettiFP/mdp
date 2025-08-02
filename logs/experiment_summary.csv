@@ -1,5 +1,0 @@
-Environment,Episodes,Avg_Reward,Std_Reward,Success_Rate,Avg_Length
-human_normal,1,0.0,0.0,0.0,1.0
-human_hard,1,0.0,0.0,0.0,1.0
-llm_normal,1,0.0,0.0,0.0,1.0
-llm_hard,1,0.0,0.0,0.0,1.0
